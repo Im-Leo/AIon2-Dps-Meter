@@ -1,4 +1,4 @@
-# 🗡️ Aion 2 DPS Meter
+# 🗡️ RATmeter - Aion 2 DPS Meter and Stat Efficiency Calculator
 
 [![Latest Version](https://img.shields.io/github/v/tag/Kuroukihime/AIon2-Dps-Meter?label=latest%20version)](https://github.com/Kuroukihime/AIon2-Dps-Meter/tags)
 [![Server](https://img.shields.io/badge/server-Global-6f42c1)](#)
@@ -6,7 +6,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)](#)
 [![License](https://img.shields.io/github/license/Kuroukihime/AIon2-Dps-Meter)](LICENSE)
 
-A lightweight, **network-based** DPS meter for **Aion 2 Global**. It passively reads game packets off your network interface — it does **not** modify, inject into, or interact with the game client or server in any way.
+A lightweight, **network-based** DPS meter and Stat Efficiency Calculator for **Aion 2 Global**. It passively reads game packets off your network interface — it does **not** modify, inject into, or interact with the game client or server in any way.
 
 > **⚠️ Disclaimer:** This tool only reads network traffic on your local machine. It does not inject code, modify memory, or communicate with any external service. All combat logs and data remain strictly on your local machine; this tool does not share, upload, or transmit any data to external resources. Use at your own discretion and in accordance with the game's terms of service.
 
