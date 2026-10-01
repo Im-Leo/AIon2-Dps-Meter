@@ -4,6 +4,7 @@ using AionDpsMeter.Services.Services.Timed;
 using AionDpsMeter.UI.Services.Windowing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics;
 
 
 namespace AionDpsMeter.UI.Pages
@@ -15,12 +16,13 @@ namespace AionDpsMeter.UI.Pages
         private int Count => skillCdTracker.Items.Count;
         private CancellationTokenSource? timerCts;
         private OverlaySettings settings = new();
+        private IReadOnlyList<TimedItemState> displayedItems = Array.Empty<TimedItemState>();
+
 
         protected override void OnInitialized()
         {
             settings = appSettingsService.SkillCdOverlaySettings;
 
-            skillCdTracker.StateChanged += OnLiveStateChanged;
             appSettingsService.SettingsChanged += OnSettingsChanged;
             windowHelper.WindowStateUpdated += OnLiveStateChanged;
 
@@ -28,6 +30,8 @@ namespace AionDpsMeter.UI.Pages
             timerCts = new CancellationTokenSource();
             _ = RunRefreshTimerAsync(timerCts.Token);
         }
+
+
 
         private async Task RunRefreshTimerAsync(CancellationToken cancellationToken)
         {
@@ -37,6 +41,12 @@ namespace AionDpsMeter.UI.Pages
             {
                 while (await timer.WaitForNextTickAsync(cancellationToken))
                 {
+                    var currentItems = skillCdTracker.Items.ToList();
+
+                    displayedItems = settings.Order == OverlayOrderMode.Ascending
+                        ? currentItems.OrderBy(i => i.TimeLeft).ToList()
+                        : currentItems.OrderByDescending(i => i.TimeLeft).ToList();
+
                     await InvokeAsync(StateHasChanged);
                 }
             }
@@ -66,17 +76,7 @@ namespace AionDpsMeter.UI.Pages
             windowManager.Drag(WindowKey.SkillCdOverlay);
         }
 
-        private IEnumerable<TimedItemState> OrderedItems
-        {
-            get
-            {
-                var items = skillCdTracker.Items.AsEnumerable();
-                items = settings.Order == OverlayOrderMode.Ascending
-                    ? items.OrderBy(i => i.TimeLeft)
-                    : items.OrderByDescending(i => i.TimeLeft);
-                return items;
-            }
-        }
+      
 
         private string ContainerStyle
         {
@@ -109,7 +109,6 @@ namespace AionDpsMeter.UI.Pages
 
         public void Dispose()
         {
-            skillCdTracker.StateChanged -= OnLiveStateChanged;
             appSettingsService.SettingsChanged -= OnSettingsChanged;
             windowHelper.WindowStateUpdated = OnLiveStateChanged;
 

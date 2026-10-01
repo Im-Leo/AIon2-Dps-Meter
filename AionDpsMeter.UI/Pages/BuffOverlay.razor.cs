@@ -17,17 +17,19 @@ namespace AionDpsMeter.UI.Pages
         private CancellationTokenSource? timerCts;
         private OverlaySettings settings = new();
 
+        private IReadOnlyList<TimedItemState> displayedItems = Array.Empty<TimedItemState>();
+       
         protected override void OnInitialized()
         {
             settings = appSettingsService.BufOverlaySettings;
 
-            buffTracker.StateChanged += OnLiveStateChanged;
             appSettingsService.SettingsChanged += OnSettingsChanged;
-            windowHelper.WindowStateUpdated += OnLiveStateChanged;
 
             timerCts = new CancellationTokenSource();
             _ = RunRefreshTimerAsync(timerCts.Token);
         }
+
+   
 
         private async Task RunRefreshTimerAsync(CancellationToken cancellationToken)
         {
@@ -37,22 +39,25 @@ namespace AionDpsMeter.UI.Pages
             {
                 while (await timer.WaitForNextTickAsync(cancellationToken))
                 {
-                    await InvokeAsync(StateHasChanged);
+                    var currentItems = buffTracker.Items.ToList();
+
+                    var newItems = settings.Order == OverlayOrderMode.Ascending
+                        ? currentItems.OrderBy(i => i.TimeLeft).ToList()
+                        : currentItems.OrderByDescending(i => i.TimeLeft).ToList();
+
+                    await InvokeAsync(() =>
+                    {
+                        displayedItems = newItems;
+                        StateHasChanged();
+                    });
                 }
             }
             catch (OperationCanceledException)
             {
-               
             }
         }
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender) await InvokeAsync(StateHasChanged); 
-        }
 
-        private void OnLiveStateChanged(object? sender, EventArgs e) =>
-            InvokeAsync(StateHasChanged);
 
         private void OnSettingsChanged(object? sender, EventArgs e)
         {
@@ -66,17 +71,7 @@ namespace AionDpsMeter.UI.Pages
             windowManager.Drag(WindowKey.BuffOverlay);
         }
 
-        private IEnumerable<TimedItemState> OrderedItems
-        {
-            get
-            {
-                var items = buffTracker.Items.AsEnumerable();
-                items = settings.Order == OverlayOrderMode.Ascending
-                    ? items.OrderBy(i => i.TimeLeft)
-                    : items.OrderByDescending(i => i.TimeLeft);
-                return items;
-            }
-        }
+      
 
         private string ContainerStyle
         {
@@ -108,9 +103,7 @@ namespace AionDpsMeter.UI.Pages
 
         public void Dispose()
         {
-            buffTracker.StateChanged -= OnLiveStateChanged;
             appSettingsService.SettingsChanged -= OnSettingsChanged;
-            windowHelper.WindowStateUpdated -= OnLiveStateChanged;
             timerCts?.Cancel();
             timerCts?.Dispose();
             timerCts = null;
