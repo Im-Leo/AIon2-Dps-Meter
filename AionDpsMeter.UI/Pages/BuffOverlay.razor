@@ -1,15 +1,24 @@
 ﻿@implements IDisposable
 
+
+
 @if (settings.Enabled)
 {
-    <div class="timed-icon-overlay @(IsEditable ? "editable" : "")" style="@ContainerStyle" @onmousedown="BeginDrag">
+    <div class="timed-icon-overlay @(IsEditable ? "editable" : "")"
+         style="@ContainerStyle"
+         @onmousedown="BeginDrag">
         <div class="timed-icon-overlay__track" style="@TrackStyle">
-            @foreach (var item in OrderedItems)
+            @foreach (var item in displayedItems)
             {
                 <div class="timed-icon-overlay__icon @(item.IsExpiring ? "blink" : "")"
                      style="@IconStyle">
-                    <img src="@item.IconUrl" draggable="false"/>
-                    <span class="timed-icon-overlay__time" style="@CdTextStyle">@FormatTimeLeft(item.TimeLeft)</span>
+
+                    <img src="@item.IconUrl" draggable="false" />
+                    <span class="timed-icon-overlay__time" style="@CdTextStyle">
+                        @FormatTimeLeft(item.TimeLeft)
+                    </span>
+
+               
                 </div>
             }
         </div>
@@ -18,7 +27,7 @@
 
 <style>
     .timed-icon-overlay {
-        position: absolute;
+        position: relative;
         top: 0;
         left: 0;
         user-select: none;
