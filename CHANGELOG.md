@@ -2,6 +2,9 @@
 
 ## [1.11.4.0] - 2026-10-04
 
+### Added
+- **Minimize to tray**: the Hide button and the toggle-visibility hotkey send the meter and its overlays to the system tray. Double-click the tray icon or use its menu (Show / Settings / Exit).
+
 ### Changed
 - The meter refreshes 10 times per second and re-renders only when a displayed value changes; bar movement is animated in CSS. This keeps its embedded browser from falling behind in large fights.
 - A boss fight is marked completed and saved as soon as the boss dies, and fights left idle are completed when the history is opened, so they no longer stay "Active" after a dungeon's last boss.
