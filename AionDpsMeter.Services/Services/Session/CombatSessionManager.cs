@@ -171,8 +171,8 @@ namespace AionDpsMeter.Services.Services.Session
         public double GetPartyDps()
         {
             double totalDamage = PlayerStats.Sum(r => r.TotalDamage);
-            var combatDuration = GetCombatDuration();
-            return totalDamage / combatDuration.TotalSeconds;
+            double seconds = GetCombatDuration().TotalSeconds;
+            return seconds > 0 ? totalDamage / seconds : 0;
         }
 
         /// <summary>
