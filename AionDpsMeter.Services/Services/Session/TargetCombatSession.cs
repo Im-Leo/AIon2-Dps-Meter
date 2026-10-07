@@ -131,6 +131,9 @@ namespace AionDpsMeter.Services.Services.Session
                 .ToList();
         }
 
+        public IReadOnlyList<PlayerDamage> GetHits(long playerId) =>
+            playerSessions.TryGetValue(playerId, out var session) ? session.Hits : [];
+
         public IReadOnlyList<PlayerDamage> GetCombatLog(long playerId)
         {
             if (!playerSessions.TryGetValue(playerId, out var session))

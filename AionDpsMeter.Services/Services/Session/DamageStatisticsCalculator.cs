@@ -9,9 +9,6 @@ namespace AionDpsMeter.Services.Services.Session
 
         public static PlayerStats ComputePlayerStats(PlayerSession session, long totalCombatDamage)
         {
-            var hits = session.Hits.ToList();
-            var nonDotHits = hits.Where(h => !h.IsDot).ToList();
-
             var duration = GetDuration(session);
 
             return new PlayerStats
@@ -29,13 +26,13 @@ namespace AionDpsMeter.Services.Services.Session
                 PlayerDeaths = session.PlayerDeaths,
                 TotalDamage = session.TotalDamage,
 
-                HitCount = nonDotHits.Count,
-                CriticalHits = nonDotHits.Count(h => h.IsCritical),
-                BackAttacks = nonDotHits.Count(h => h.IsBackAttack),
-                FrontAttacks = nonDotHits.Count(h => h.IsFrontAttack),
-                PerfectHits = nonDotHits.Count(h => h.IsPerfect),
-                DoubleDamageHits = nonDotHits.Count(h => h.IsDoubleDamage),
-                ParryHits = nonDotHits.Count(h => h.IsParry),
+                HitCount = session.HitCount,
+                CriticalHits = session.CriticalHits,
+                BackAttacks = session.BackAttacks,
+                FrontAttacks = session.FrontAttacks,
+                PerfectHits = session.PerfectHits,
+                DoubleDamageHits = session.DoubleDamageHits,
+                ParryHits = session.ParryHits,
 
                 DamagePerSecond = session.TotalDamage / duration,
                 DamagePercentage = GetPercentage(session.TotalDamage, totalCombatDamage),

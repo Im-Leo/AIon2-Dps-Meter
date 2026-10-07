@@ -175,11 +175,28 @@ namespace AionDpsMeter.Services.Services.Session
             return totalDamage / combatDuration.TotalSeconds;
         }
 
-        public IReadOnlyList<PlayerDamage> GetPlayerCombatLog(long playerId)
+        /// <summary>
+        /// Hits of <paramref name="playerId"/> in the active session after the first <paramref name="knownCount"/>,
+        /// oldest first and at most the latest <paramref name="maxCount"/>. When the session restarted (fewer hits
+        /// than known), the hits are returned from the start.
+        /// </summary>
+        public (int TotalCount, IReadOnlyList<PlayerDamage> NewHits) GetPlayerHitsSince(long playerId, int knownCount, int maxCount)
         {
             lock (lockObject)
             {
-                return GetActiveTargetSession()?.GetCombatLog(playerId) ?? [];
+                var hits = GetActiveTargetSession()?.GetHits(playerId) ?? [];
+                var start = Math.Max(hits.Count < knownCount ? 0 : knownCount, hits.Count - maxCount);
+                var newHits = new List<PlayerDamage>(hits.Count - start);
+                for (var i = start; i < hits.Count; i++) newHits.Add(hits[i]);
+                return (hits.Count, newHits);
+            }
+        }
+
+        public int GetPlayerHitCount(long playerId)
+        {
+            lock (lockObject)
+            {
+                return GetActiveTargetSession()?.GetHits(playerId).Count ?? 0;
             }
         }
 
@@ -262,7 +279,9 @@ namespace AionDpsMeter.Services.Services.Session
                     // Check all other entries for idle timeout on each new event
                     CheckIdleTimeouts(damageEvent.DateTime, excludeTargetId: damageEvent.TargetEntity.Id);
 
-                    targetResolver.Update(targetEntries.Values, damageEvent.DateTime);
+                    bool userSwitchedTarget = entityTracker.IsCurrentPlayer(damageEvent.SourceEntity.Id)
+                        && damageEvent.TargetEntity.Id != targetResolver.ActiveTargetId;
+                    targetResolver.Update(targetEntries, damageEvent.DateTime, force: userSwitchedTarget);
                 }
             }
             catch (Exception ex)
@@ -326,7 +345,7 @@ namespace AionDpsMeter.Services.Services.Session
                     entry.CompleteActiveSession();
                 }
 
-                targetResolver.Update(targetEntries.Values, completedAt);
+                targetResolver.Update(targetEntries, completedAt, force: true);
             }
         }
 
