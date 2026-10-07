@@ -16,3 +16,4 @@
 - A summoner's pet damage from before the meter knew its owner stayed on a separate row instead of the owner's.
 - The meter could stay locked onto another program's encrypted traffic after the game was closed, instead of waiting for the game.
 - Skill and buff icons could stay blank in the details window: an icon not yet downloaded never appeared while the window was open.
+- Closing the skill cooldown overlay stopped other windows from reacting to edit mode.
