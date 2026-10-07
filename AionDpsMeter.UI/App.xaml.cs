@@ -69,6 +69,7 @@ namespace AionDpsMeter.UI
                     services.AddSingleton<IPacketService, PacketPipelineService>();
 
                     services.AddWindowManager();
+                    services.AddSingleton<GameFocusWatcher>();
                     services.AddSingleton<WindowVisibilityService>();
                     services.AddSingleton<TrayService>();
 
@@ -96,6 +97,7 @@ namespace AionDpsMeter.UI
             var windowHelper = AppHost.Services.GetRequiredService<WindowHelper>();
             windowManager.Open(WindowKey.Main, mainWindow, true);
             windowHelper.OpenRequiredWindows();
+            AppHost.Services.GetRequiredService<WindowVisibilityService>().Start();
             base.OnStartup(e);
         }
 
@@ -104,6 +106,7 @@ namespace AionDpsMeter.UI
             try
             {
                 AppHost.Services.GetRequiredService<TrayService>().Dispose();
+                AppHost.Services.GetRequiredService<GameFocusWatcher>().Dispose();
                 var sessionManager = AppHost.Services.GetRequiredService<CombatSessionManager>();
                 var historyStore = AppHost.Services.GetRequiredService<ICombatHistoryStore>();
                 sessionManager.CompleteAndPersistActiveSessions();

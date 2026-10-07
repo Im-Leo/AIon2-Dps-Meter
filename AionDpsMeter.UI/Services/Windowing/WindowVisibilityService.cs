@@ -1,4 +1,5 @@
-﻿using System.Windows;
+using System.Windows;
+using AionDpsMeter.Services.Services.Settings;
 
 namespace AionDpsMeter.UI.Services.Windowing
 {
@@ -6,20 +7,34 @@ namespace AionDpsMeter.UI.Services.Windowing
     public enum HideReason
     {
         None = 0,
-        Tray = 1
+        Tray = 1,
+        GameNotFocused = 2
     }
 
     /// <summary>
     /// Hides all app windows while any <see cref="HideReason"/> applies and shows them again once none does.
     /// </summary>
-    public sealed class WindowVisibilityService
+    public sealed class WindowVisibilityService(GameFocusWatcher focusWatcher, IAppSettingsService settingsService)
     {
         private readonly List<Window> _hiddenWindows = new();
         private HideReason _reasons;
 
+        // Set by an explicit tray restore so the app stays reachable without the game; cleared once focus leaves the app.
+        private bool _restoredByUser;
+
         public bool IsHiddenBy(HideReason reason) => (_reasons & reason) != 0;
 
         public bool IsHidden => _reasons != HideReason.None;
+
+        public void Start()
+        {
+            focusWatcher.ForegroundChanged += (_, _) => ApplyGameFocus();
+            settingsService.SettingsChanged += (_, _) =>
+                Application.Current.Dispatcher.InvokeAsync(ApplyGameFocus);
+
+            focusWatcher.Start();
+            ApplyGameFocus();
+        }
 
         public void Hide(HideReason reason)
         {
@@ -51,6 +66,7 @@ namespace AionDpsMeter.UI.Services.Windowing
         /// </summary>
         public void RestoreAll()
         {
+            _restoredByUser = true;
             if (_reasons != HideReason.None)
             {
                 _reasons = HideReason.None;
@@ -58,6 +74,24 @@ namespace AionDpsMeter.UI.Services.Windowing
             }
 
             Application.Current.MainWindow?.Activate();
+        }
+
+        private void ApplyGameFocus()
+        {
+            var foreground = focusWatcher.Foreground;
+            if (foreground == ForegroundKind.Other)
+                _restoredByUser = false;
+
+            // The app's own foreground keeps it visible but never brings it back while hidden: hidden windows cannot be
+            // clicked, so that foreground is the tray menu opening, not the user choosing the app (tray Show restores explicitly).
+            var visible = !settingsService.ShowOnlyOverGame
+                || foreground == ForegroundKind.Game
+                || (foreground == ForegroundKind.Self && (_restoredByUser || (focusWatcher.IsGameRunning() && !IsHiddenBy(HideReason.GameNotFocused))));
+
+            if (visible)
+                Clear(HideReason.GameNotFocused);
+            else
+                Hide(HideReason.GameNotFocused);
         }
 
         private void ShowHiddenWindows()
