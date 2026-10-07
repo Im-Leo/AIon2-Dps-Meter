@@ -135,7 +135,8 @@ public sealed class PacketAccumulator
                         }
                         else
                         {
-                            logger.LogTrace($"EXTRACTED PACKET: {BitConverter.ToString(packet)}");
+                            if (logger.IsEnabled(LogLevel.Trace))
+                                logger.LogTrace($"EXTRACTED PACKET: {BitConverter.ToString(packet)}");
                             onPacketFound(packet);
                         }
 
@@ -164,7 +165,7 @@ public sealed class PacketAccumulator
         if (count <= 0) return;
         if (count > length) count = length;
 
-        if (logReason != null)
+        if (logReason != null && logger.IsEnabled(LogLevel.Trace))
         {
             var removed = new byte[count];
             Buffer.BlockCopy(buffer, 0, removed, 0, count);
