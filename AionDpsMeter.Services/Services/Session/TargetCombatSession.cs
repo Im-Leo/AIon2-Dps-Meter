@@ -126,7 +126,7 @@ namespace AionDpsMeter.Services.Services.Session
             long totalDamage = activeSessions.Sum(s => s.TotalDamage);
 
             return activeSessions
-                .Select(s => DamageStatisticsCalculator.ComputePlayerStats(s, totalDamage))
+                .Select(s => DamageStatisticsCalculator.ComputePlayerStats(s, totalDamage, GetCombatDuration().TotalSeconds))
                 .OrderByDescending(s => s.TotalDamage)
                 .ToList();
         }
@@ -147,7 +147,7 @@ namespace AionDpsMeter.Services.Services.Session
             if (!playerSessions.TryGetValue(playerId, out var session))
                 return [];
 
-            return DamageStatisticsCalculator.ComputeSkillStats(session, settingsService.GroupSummonDamage);
+            return DamageStatisticsCalculator.ComputeSkillStats(session, settingsService.GroupSummonDamage, GetCombatDuration().TotalSeconds);
         }
 
         public IReadOnlyList<BuffEvent> GetBuffEvents(long playerId, DateTime from, DateTime to)
