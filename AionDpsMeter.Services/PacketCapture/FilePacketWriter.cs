@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using AionDpsMeter.Core;
 using AionDpsMeter.Services.Services.Settings;
 
 namespace AionDpsMeter.Services.PacketCapture
 {
     public class FilePacketWriter
     {
-        private const string PacketLogDirectory = "PacketLogs";
+        private static string PacketLogDirectory => AppPaths.PacketLogsDirectory;
         private StreamWriter? packetLogWriter;
         private string? currentLogFilePath;
         private readonly Lock logLock = new();

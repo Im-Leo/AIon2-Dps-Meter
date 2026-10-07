@@ -1,4 +1,5 @@
-﻿using AionDpsMeter.Services.Extensions;
+﻿using AionDpsMeter.Core;
+using AionDpsMeter.Services.Extensions;
 using AionDpsMeter.Services.Models;
 using AionDpsMeter.Services.PacketCapture;
 using AionDpsMeter.Services.Services;
@@ -26,10 +27,20 @@ namespace AionDpsMeter.UI
     {
         public static IHost AppHost { get; private set; }
 
+        // Logged once logging exists: the copy runs before the host is built.
+        private readonly string? legacyDataCopyError;
+
         public App()
         {
-
-          
+            // Before the host is built: logging, settings and history open their files during startup.
+            try
+            {
+                AppPaths.CopyLegacyData(AppContext.BaseDirectory);
+            }
+            catch (Exception ex)
+            {
+                legacyDataCopyError = ex.Message;
+            }
 
             AppHost = Host.CreateDefaultBuilder()
                 .UseSerilog((context, services, loggerConfiguration) =>
@@ -39,7 +50,7 @@ namespace AionDpsMeter.UI
                 })
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddCombatHistoryPersistence("combat-history.db");
+                    services.AddCombatHistoryPersistence(AppPaths.HistoryDatabase);
                    
                     services.AddSingleton<IAppSettingsService, AppSettingsService>();
                     services.AddSingleton<UpdateCheckerService>();
@@ -72,6 +83,8 @@ namespace AionDpsMeter.UI
         protected override async void OnStartup(StartupEventArgs e)
         {
             await AppHost.StartAsync();
+            if (legacyDataCopyError is not null)
+                Log.Warning("Copying data from the program folder to {Folder} failed: {Error}", AppPaths.DataDirectory, legacyDataCopyError);
 
             _ = AppHost.Services.GetRequiredService<ICombatHistoryStore>();
 

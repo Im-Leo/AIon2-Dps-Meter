@@ -29,7 +29,7 @@ namespace AionDpsMeter.Core.Data
 
         private SkillIconCache()
         {
-            cacheDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "IconCache", "Skills");
+            cacheDirectory = AppPaths.IconCacheDirectory;
             Directory.CreateDirectory(cacheDirectory);
 
             httpClient = new HttpClient();
