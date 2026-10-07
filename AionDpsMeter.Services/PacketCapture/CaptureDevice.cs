@@ -14,10 +14,12 @@ namespace AionDpsMeter.Services.PacketCapture
     ///   2. Heartbeat hits are tallied per adapter+port.
     ///   3. When any adapter+port crosses DetectionThreshold a 2-second grace
     ///      window starts so that VPN loopback traffic has time to appear.
-    ///   4. After the window, priority rules pick the winning adapter:
-    ///      loopback > physical. The winner's device is locked; all others close.
+    ///   4. After the window, priority rules pick the winning adapter+port:
+    ///      owned by the game process > owned by another process (a relay such as a
+    ///      ping reducer), then loopback > physical. The winner's device is locked; all others close.
     ///   5. A watchdog resets everything back to detection if no heartbeat is
-    ///      seen on the locked adapter for WatchdogTimeoutMs.
+    ///      seen on the locked adapter for WatchdogTimeoutMs, or once the game exits.
+    /// Nothing is counted or locked while the game is not running.
     /// </summary>
     public sealed class CaptureDevice : IPacketCaptureDevice
     {
@@ -33,10 +35,10 @@ namespace AionDpsMeter.Services.PacketCapture
         private readonly List<AdapterContext> allAdapters = new();
 
         /// <summary>
-        /// Hit counts: adapterName → (port → hitCount).
+        /// Hit counts: adapterName → (server port → hit count and the local port it was sent to).
         /// Written from multiple capture callbacks; guarded by detectionLock.
         /// </summary>
-        private readonly Dictionary<string, Dictionary<int, int>> detectionHits = new();
+        private readonly Dictionary<string, Dictionary<int, (int Hits, int LocalPort)>> detectionHits = new();
 
         private readonly object detectionLock = new();
 
@@ -330,6 +332,8 @@ namespace AionDpsMeter.Services.PacketCapture
             ReadOnlySpan<byte> payload = tcp.PayloadData;
             if (payload.IndexOf(HeartbeatPattern) < 0) return;
 
+            if (!GameProcess.IsRunning()) return;
+
             int port = tcp.SourcePort;
 
             lock (detectionLock)
@@ -338,12 +342,13 @@ namespace AionDpsMeter.Services.PacketCapture
 
                 if (!detectionHits.TryGetValue(ctx.Device.Name, out var portMap))
                 {
-                    portMap = new Dictionary<int, int>();
+                    portMap = new Dictionary<int, (int Hits, int LocalPort)>();
                     detectionHits[ctx.Device.Name] = portMap;
                 }
 
-                portMap.TryGetValue(port, out int hits);
-                portMap[port] = ++hits;
+                portMap.TryGetValue(port, out var entry);
+                int hits = entry.Hits + 1;
+                portMap[port] = (hits, tcp.DestinationPort);
 
                 logger.LogDebug(
                     $"[DETECT] Pattern on {ctx.Kind} adapter '{ctx.Device.Name}' " +
@@ -391,64 +396,43 @@ namespace AionDpsMeter.Services.PacketCapture
         }
 
         /// <summary>
-        /// Picks the best adapter+port from accumulated detection hits.
-        /// Priority: Loopback > Physical.
-        /// highest hit count wins.
+        /// Picks the best adapter+port from accumulated detection hits: a connection owned by the game process wins,
+        /// then loopback over physical, then the highest hit count.
         /// </summary>
         private (AdapterContext? adapter, int port) PickWinner()
         {
-            AdapterContext? bestLoopback = null; int bestLoopbackPort = 0; int bestLoopbackHits = 0;
-            AdapterContext? bestPhysical = null; int bestPhysicalPort = 0; int bestPhysicalHits = 0;
+            AdapterContext? best = null;
+            int bestPort = 0;
+            (bool OwnedByGame, bool Loopback, int Hits) bestRank = default;
 
             foreach (var ctx in allAdapters)
             {
                 if (!detectionHits.TryGetValue(ctx.Device.Name, out var portMap)) continue;
 
-                foreach (var kv in portMap)
+                foreach (var (port, (hits, localPort)) in portMap)
                 {
-                    int port = kv.Key;
-                    int hits = kv.Value;
                     if (hits < DetectionThreshold) continue;
 
-                    if (ctx.Kind == AdapterKind.Loopback && hits > bestLoopbackHits)
+                    string? owner = GameProcess.OwnerOfLocalPort(localPort);
+                    var rank = (GameProcess.IsGameProcess(owner), ctx.Kind == AdapterKind.Loopback, hits);
+
+                    if (best is null || rank.CompareTo(bestRank) > 0)
                     {
-                        bestLoopback = ctx;
-                        bestLoopbackPort = port;
-                        bestLoopbackHits = hits;
-                    }
-                    else if (ctx.Kind == AdapterKind.Physical && hits > bestPhysicalHits)
-                    {
-                        bestPhysical = ctx;
-                        bestPhysicalPort = port;
-                        bestPhysicalHits = hits;
+                        best = ctx;
+                        bestPort = port;
+                        bestRank = rank;
                     }
                 }
             }
 
-            if (bestLoopback != null)
+            if (best != null)
             {
                 logger.LogInformation(
-                    $"[DETECT] Winner: LOOPBACK '{bestLoopback.Device.Name}' " +
-                    $"port {bestLoopbackPort} ({bestLoopbackHits} hits)." +
-                    (bestPhysical != null
-                        ? $" Physical '{bestPhysical.Device.Name}' port {bestPhysicalPort} " +
-                          $"also had {bestPhysicalHits} hits — loopback preferred."
-                        : string.Empty));
-
-                return (bestLoopback, bestLoopbackPort);
+                    $"[DETECT] Winner: {best.Kind} '{best.Device.Name}' port {bestPort} ({bestRank.Hits} hits, " +
+                    $"{(bestRank.OwnedByGame ? "owned by the game" : "owned by another process")}).");
             }
 
-            if (bestPhysical != null)
-            {
-                logger.LogInformation(
-                    $"[DETECT] Winner: PHYSICAL '{bestPhysical.Device.Name}' " +
-                    $"port {bestPhysicalPort} ({bestPhysicalHits} hits). " +
-                    $"No loopback candidate found.");
-
-                return (bestPhysical, bestPhysicalPort);
-            }
-
-            return (null, 0);
+            return (best, bestPort);
         }
 
 
@@ -488,6 +472,13 @@ namespace AionDpsMeter.Services.PacketCapture
         private void CheckWatchdog(object? _)
         {
             if (!isCapturing || !isLocked) return;
+
+            if (!GameProcess.IsRunning())
+            {
+                logger.LogWarning("[WATCHDOG] Game process exited. Resetting to detection mode.");
+                ResetToDetection();
+                return;
+            }
 
             int beats = Interlocked.Exchange(ref watchdogHeartbeatsSinceCheck, 0);
             if (beats > 0)
