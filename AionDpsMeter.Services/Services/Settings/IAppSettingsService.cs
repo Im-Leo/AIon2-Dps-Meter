@@ -16,6 +16,7 @@ namespace AionDpsMeter.Services.Services.Settings
         bool RelativeProgressBar { get; set; }
 
         string ToggleVisibilityHotkey { get; set; }
+        bool ShowOnlyOverGame { get; set; }
 
         // Main window position & size
         double? WindowLeft { get; set; }
