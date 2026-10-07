@@ -56,6 +56,8 @@ Simulate stat changes and see their exact damage impact **before** committing th
 
 > You may need to run as **Administrator** depending on your system's packet-capture permissions.
 
+> Your settings, combat history, logs and icon cache are stored in `%LocalAppData%\Aion2DPSMeter`, so updating or deleting the program folder keeps them. Data left in the program folder by earlier versions is copied there on first start.
+
 ---
 
 ## ❓ FAQ

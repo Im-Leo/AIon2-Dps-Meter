@@ -1,3 +1,4 @@
+using AionDpsMeter.Core;
 using AionDpsMeter.Core.Windowing;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -6,7 +7,7 @@ namespace AionDpsMeter.Services.Services.Settings
 {
     public sealed class AppSettingsService : IAppSettingsService
     {
-        private const string SettingsFilePath = "appsettings.user.json";
+        private static string SettingsFilePath => AppPaths.SettingsFile;
         private readonly Lock _lock = new();
         private AppSettingsData _data;
 
@@ -489,6 +490,7 @@ namespace AionDpsMeter.Services.Services.Settings
             try
             {
                 var json = JsonSerializer.Serialize(_data, new JsonSerializerOptions { WriteIndented = true });
+                Directory.CreateDirectory(AppPaths.DataDirectory);
                 File.WriteAllText(SettingsFilePath, json);
             }
             catch { }

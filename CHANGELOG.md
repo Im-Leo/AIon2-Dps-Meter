@@ -5,6 +5,7 @@
 ### Changed
 - The meter refreshes 10 times per second and re-renders only when a displayed value changes; bar movement is animated in CSS. This keeps its embedded browser from falling behind in large fights.
 - A boss fight is marked completed and saved as soon as the boss dies, and fights left idle are completed when the history is opened, so they no longer stay "Active" after a dungeon's last boss.
+- Settings, combat history, logs, the icon cache and packet logs are stored in `%LocalAppData%\Aion2DPSMeter` instead of the program folder, so they survive updates and deleting the folder. On first start, data from earlier versions is copied there; nothing is overwritten or removed.
 
 ### Fixed
 - The app slowed down over long sessions: every mob ever hit kept an entry that was scanned on each damage and buff event. Finished entries are now dropped.
