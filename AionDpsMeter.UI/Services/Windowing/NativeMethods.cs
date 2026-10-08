@@ -17,6 +17,8 @@ internal static class NativeMethods
 
     // WinEvent hooks.
     public const uint EVENT_SYSTEM_FOREGROUND = 0x0003;
+    public const uint EVENT_OBJECT_LOCATIONCHANGE = 0x800B;
+    public const int OBJID_WINDOW = 0;
     public const uint WINEVENT_OUTOFCONTEXT = 0x0000;
 
     public delegate bool EnumChildProc(IntPtr hWnd, IntPtr lParam);
@@ -32,6 +34,15 @@ internal static class NativeMethods
 
     [DllImport("user32.dll")]
     public static extern IntPtr GetForegroundWindow();
+
+    public const uint GA_ROOT = 2;
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr GetAncestor(IntPtr hWnd, uint gaFlags);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool IsWindowVisible(IntPtr hWnd);
 
     [DllImport("user32.dll")]
     public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);

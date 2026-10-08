@@ -30,9 +30,9 @@ namespace AionDpsMeter.UI.Views
             this.trayService = trayService;
 
             _saveBoundsTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(5000) };
-            _saveBoundsTimer.Tick += (_, _) => { _saveBoundsTimer.Stop(); SaveWindowBounds(); };
+            _saveBoundsTimer.Tick += (_, _) => { _saveBoundsTimer.Stop(); SaveWindowSize(); };
 
-            RestoreWindowBounds();
+            RestoreWindowSize();
 
             MainBorder.Opacity = settingsService.WindowOpacity;
 
@@ -85,37 +85,16 @@ namespace AionDpsMeter.UI.Views
         private void ToggleWindowVisibility() => trayService.Toggle();
 
 
-        private void RestoreWindowBounds()
+        // Only the size is persisted; the position is game-relative (see WindowHelper.PlaceWindowsOverGame).
+        private void RestoreWindowSize()
         {
-            var left   = settingsService.WindowLeft;
-            var top    = settingsService.WindowTop;
-            var width  = settingsService.WindowWidth;
-            var height = settingsService.WindowHeight;
-
-            if (!left.HasValue || !top.HasValue)
-                return;
-
-            double w = width.HasValue  ? Math.Max(MinWidth,  width.Value)  : Width;
-            double h = height.HasValue ? Math.Max(MinHeight, height.Value) : Height;
-
-            var wa = ScreenHelper.GetWorkingAreaForPoint(left.Value, top.Value);
-
-            double l = Math.Max(wa.Left, Math.Min(left.Value, wa.Right  - w));
-            double t = Math.Max(wa.Top,  Math.Min(top.Value,  wa.Bottom - h));
-
-            WindowStartupLocation = WindowStartupLocation.Manual;
-            Left   = l;
-            Top    = t;
-            Width  = w;
-            Height = h;
+            if (settingsService.WindowWidth is { } width)   Width  = Math.Max(MinWidth,  width);
+            if (settingsService.WindowHeight is { } height) Height = Math.Max(MinHeight, height);
         }
 
-      
-        private void SaveWindowBounds()
+        private void SaveWindowSize()
         {
             if (WindowState != WindowState.Normal) return;
-            settingsService.WindowLeft   = Left;
-            settingsService.WindowTop    = Top;
             settingsService.WindowWidth  = Width;
             settingsService.WindowHeight = Height;
         }
@@ -133,7 +112,7 @@ namespace AionDpsMeter.UI.Views
         {
             _saveBoundsTimer?.Stop();
             _saveBoundsTimer = null;
-            SaveWindowBounds();
+            SaveWindowSize();
             if (DataContext is MainViewModel viewModel)
                 viewModel.Dispose();
             base.OnClosed(e);
