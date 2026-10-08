@@ -12,6 +12,7 @@ namespace AionDpsMeter.UI
     {
         private readonly CombatSessionManager _sessionManager;
         private readonly IAppSettingsService _settingsService;
+        private HistorySessionWindow? _sessionWindow;
 
         public HistoryWindow(CombatSessionManager sessionManager, IAppSettingsService settingsService)
         {
@@ -55,11 +56,23 @@ namespace AionDpsMeter.UI
                 var snapshot = _sessionManager.GetHistorySession(entry.SessionId);
                 if (snapshot is null) return;
 
+                var viewModel = new HistorySessionViewModel(snapshot, _settingsService);
+
+                // One encounter window: another encounter loads into it, keeping the position the user gave it.
+                if (_sessionWindow is { } open)
+                {
+                    open.DataContext = viewModel;
+                    open.Activate();
+                    return;
+                }
+
                 var sessionWindow = new HistorySessionWindow(_settingsService)
                 {
-                    DataContext = new HistorySessionViewModel(snapshot, _settingsService),
+                    DataContext = viewModel,
                     Owner = this
                 };
+                sessionWindow.Closed += (_, _) => _sessionWindow = null;
+                _sessionWindow = sessionWindow;
 
                 PositionWindowToRight(sessionWindow);
                 sessionWindow.Show();
