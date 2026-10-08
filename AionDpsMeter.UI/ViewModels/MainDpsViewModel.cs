@@ -24,6 +24,7 @@ namespace AionDpsMeter.UI.ViewModels
         public List<PlayerRenderState> Players = new();
 
         public string CombatDuration = "00:00";
+        public bool PinUserOnTop;
         public bool IsEditable => windowHelper.IsMeterEdit;
         public string TotalRaidDamageFormatted = "0/s";
         public string PingDisplay = "-- ms";
@@ -105,8 +106,11 @@ namespace AionDpsMeter.UI.ViewModels
 
             TotalRaidDamageFormatted = $"{DamageFormatter.Format(sessionManager.GetPartyDps())}/s";
 
+            bool pinUserOnTop = settingsService.PinUserOnTop;
+            PinUserOnTop = pinUserOnTop;
+
             var currentStats = sessionManager.PlayerStats
-                .Where(r => r.IsIdentified || r.DamagePercentage > 1)
+                .Where(r => r.IsIdentified || r.DamagePercentage > 1 || (pinUserOnTop && r.IsUser && r.TotalDamage > 0))
                 .ToList();
 
             long topDamage = currentStats.Count > 0 ? currentStats.Max(x => x.TotalDamage) : 0;
@@ -157,9 +161,15 @@ namespace AionDpsMeter.UI.ViewModels
             foreach (var key in PlayerStates.Keys.Where(k => !currentIds.Contains(k)).ToList())
                 PlayerStates.Remove(key);
 
-            Players = PlayerStates.Values
+            var ranked = PlayerStates.Values
                 .OrderByDescending(p => p.TotalDamage)
                 .ToList();
+            for (int i = 0; i < ranked.Count; i++)
+                ranked[i].Rank = i + 1;
+
+            Players = pinUserOnTop
+                ? ranked.OrderByDescending(p => p.IsUser).ToList()
+                : ranked;
 
             // Re-render only when something on screen changed; idle ticks and identical readouts cost the browser nothing.
             var signature = BuildDisplaySignature();
@@ -173,12 +183,12 @@ namespace AionDpsMeter.UI.ViewModels
             var sb = new System.Text.StringBuilder();
             sb.Append(CombatDuration).Append('|').Append(TotalRaidDamageFormatted).Append('|').Append(PingDisplay)
               .Append('|').Append(HasActiveTarget).Append('|').Append(ActiveTargetName).Append('|').Append(ActiveTargetHpDisplay)
-              .Append('|').Append(ActiveTargetHpPercentage.ToString("F1"));
+              .Append('|').Append(ActiveTargetHpPercentage.ToString("F1")).Append('|').Append(PinUserOnTop);
             foreach (var p in Players)
             {
                 sb.Append('#').Append(p.PlayerId).Append(p.PlayerNameDisplay).Append(p.DpsFormatted).Append(p.TotalDamageFormatted)
                   .Append(p.DamagePercentage.ToString("F1")).Append(p.EffectivePercentage.ToString("F1")).Append(p.CriticalRate.ToString("F1"))
-                  .Append(p.DeathsDisplay).Append(p.CombatPower).Append(p.ClassId).Append(p.IsUser);
+                  .Append(p.DeathsDisplay).Append(p.CombatPower).Append(p.Rank).Append(p.ClassId).Append(p.IsUser);
             }
             return sb.ToString();
         }
@@ -257,6 +267,7 @@ namespace AionDpsMeter.UI.ViewModels
 
         //public string GetProgressClass(PlayerRenderState player) => $"dps-class-{player.ClassId}";
         public string GetCombatScoreDisplay(PlayerRenderState player) => (string.IsNullOrWhiteSpace(player.CombatPower) || player.CombatPower == "0") ? "" : player.CombatPower;
+        public string GetSelfClass(PlayerRenderState player) => player.IsUser ? "is-self" : string.Empty;
         public double ClampPercent(double value) => Math.Max(0, Math.Min(100, value));
 
         public string GetRowScaleStyle() => RowScale != 1.0

@@ -19,6 +19,7 @@ namespace AionDpsMeter.Services.Services.Settings
         bool ShowOnlyOverGame { get; set; }
         /// <summary>Modifier held to make overlays movable: "Ctrl", "Shift" or "Alt".</summary>
         string OverlayMoveKey { get; set; }
+        bool PinUserOnTop { get; set; }
 
         // Main window size; its position is game-relative
         double? WindowWidth { get; set; }
