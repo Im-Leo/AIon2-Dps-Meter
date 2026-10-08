@@ -26,6 +26,22 @@ namespace AionDpsMeter.Services.Services.Entity
 
         private string currentUserName = string.Empty;
 
+        // True once the game's own player info named the user; inference never overrides that.
+        public bool IsUserConfirmed { get; private set; }
+
+        /// <summary>Marks an inferred session player as the user; returns false when the user is already confirmed or unchanged.</summary>
+        public bool MarkUserSession(int sessionId)
+        {
+            if (IsUserConfirmed) return false;
+
+            var user = GetOrCreateSessionPlayer(sessionId);
+            if (user.IsUser) return false;
+
+            foreach (var player in sessionPlayers.Values) player.IsUser = false;
+            user.IsUser = true;
+            return true;
+        }
+
         private const int UnknownEntityHpThreshold = 1_000_000;
 
 
@@ -109,7 +125,8 @@ namespace AionDpsMeter.Services.Services.Entity
 
         public void CleanupUnidSessionPlayers()
         {
-            var toRemove = sessionPlayers.Where(r=>!r.Value.IsIdentified && r.Value.CreatedAt < DateTime.Now.AddMinutes(-10)).ToList();
+            // The user can be recognized from cooldowns before any name event identifies them; that entry must survive.
+            var toRemove = sessionPlayers.Where(r=>!r.Value.IsIdentified && !r.Value.IsUser && r.Value.CreatedAt < DateTime.Now.AddMinutes(-10)).ToList();
             foreach (var kvp in toRemove) sessionPlayers.Remove(kvp.Key);
         }
 
@@ -262,11 +279,12 @@ namespace AionDpsMeter.Services.Services.Entity
         private void SetCurrentUser(string name)
         {
             currentUserName = name;
+            IsUserConfirmed = true;
 
-  
+            // The game named the user, so an inferred guess on another row is cleared.
             foreach (var player in sessionPlayers.Values)
             {
-                if (player.Name == name) player.IsUser = true;
+                player.IsUser = player.Name == name;
             }
             foreach (var identity in globalPlayers.Values)
             {
