@@ -8,6 +8,8 @@
 - **Windows follow the game**: the meter and overlays are placed over the game window wherever it is, and follow it live when it moves to another monitor. Positions are remembered relative to the game window, never as screen coordinates.
 - **Hold-to-move**: the meter and overlays are click-through, so clicks go to the game. Hold Ctrl (configurable: Settings → Hotkeys) to use, drag (the meter by its whole header bar) or resize them; a dashed outline and the resize grip show only while it is held. Dropping them at a screen edge no longer snap-resizes them.
 - **Show Meter Only in Combat**: an optional setting (Settings → Appearance) that hides the meter outside combat. It appears when you or your group deal damage and hides 10 s after the last hit; overlays are unaffected, and holding Ctrl or opening Settings shows it anyway.
+- **Keep Me on Top**: pins your row first in the player list and shows your real DPS rank. On by default; toggle it in Settings → Appearance.
+- **Own row highlight**: your row has a gold outline and name, so you can find yourself at a glance.
 
 ### Changed
 - The meter refreshes 10 times per second and re-renders only when a displayed value changes; bar movement is animated in CSS. This keeps its embedded browser from falling behind in large fights.

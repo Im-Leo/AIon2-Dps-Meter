@@ -21,6 +21,7 @@ A lightweight, **network-based** DPS meter and Stat Efficiency Calculator for **
 - **📜 Combat History** — every fight auto-saved as a session snapshot, browsable with configurable retention
 - **🔔 Buff & Skill Cooldown Overlays** — floating overlays tracking up to 10 buffs + 10 skill cooldowns, with a pick-list to choose exactly what to track, sortable by time remaining, adjustable icon size (20–50px), and each overlay can be toggled independently
 - **⚔️ Meter Only in Combat** — optional: the meter appears when you or your group deal damage and hides 10 s after the last hit
+- **📌 Keep Me on Top** — on by default: pins your own row first with your real DPS rank, so you can find yourself in a full force; your row is also always outlined in gold
 - **🎮 Shows Only Over the Game** — the meter and overlays sit over the game window, follow it across monitors, and hide when you alt-tab away (toggleable)
 - **🖱️ Click-Through, Hold to Move** — clicks go to the game; hold Ctrl (configurable) to use, drag (by the header bar) or resize the meter and overlays
 - **🗕 Minimize to Tray** — the Hide button and hotkey send the meter and overlays to the system tray

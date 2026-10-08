@@ -37,6 +37,22 @@ namespace AionDpsMeter.Services.Services.Settings
             }
         }
 
+        public bool PinUserOnTop
+        {
+            get { lock (_lock) return _data.PinUserOnTop; }
+            set
+            {
+                bool changed;
+                lock (_lock)
+                {
+                    changed = _data.PinUserOnTop != value;
+                    _data.PinUserOnTop = value;
+                    if (changed) Save();
+                }
+                if (changed) SettingsChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
         public bool ShowMeterOnlyInCombat
         {
             get { lock (_lock) return _data.ShowMeterOnlyInCombat; }
@@ -623,6 +639,9 @@ namespace AionDpsMeter.Services.Services.Settings
 
             [JsonPropertyName("overlayMoveKey")]
             public string OverlayMoveKey { get; set; } = "Ctrl";
+
+            [JsonPropertyName("pinUserOnTop")]
+            public bool PinUserOnTop { get; set; } = true;
 
             [JsonPropertyName("showMeterOnlyInCombat")]
             public bool ShowMeterOnlyInCombat { get; set; }
