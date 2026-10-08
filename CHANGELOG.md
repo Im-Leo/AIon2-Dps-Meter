@@ -11,6 +11,8 @@
 - **Keep Me on Top**: pins your row first in the player list and shows your real DPS rank. On by default; toggle it in Settings → Appearance.
 - **Own row highlight**: your row has a gold outline and name, so you can find yourself at a glance.
 - **Rank medals**: the top three damage dealers get gold, silver and bronze rank badges; the rest keep the plain one.
+- **Party and force awareness**: the meter reads your party and force rosters from the game. Party members get a 👥 before their name and other force members a ⚔️. While you're in a party or force only your group is listed and the total counts only your group; strangers hitting the same target are still recorded, just not shown. Solo, everyone is listed as before.
+- **Item level**: shown above the class icon (combat power stays below) for you and your party and force members, read from the group rosters. Combat power is now also filled in from party rosters. Players outside your group show neither, since the game doesn't send them. Toggle it in Settings → Appearance → Show Item Level (on by default).
 
 ### Changed
 - The meter refreshes 10 times per second and re-renders only when a displayed value changes; bar movement is animated in CSS. This keeps its embedded browser from falling behind in large fights.

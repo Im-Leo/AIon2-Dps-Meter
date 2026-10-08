@@ -53,6 +53,22 @@ namespace AionDpsMeter.Services.Services.Settings
             }
         }
 
+        public bool ShowItemLevel
+        {
+            get { lock (_lock) return _data.ShowItemLevel; }
+            set
+            {
+                bool changed;
+                lock (_lock)
+                {
+                    changed = _data.ShowItemLevel != value;
+                    _data.ShowItemLevel = value;
+                    if (changed) Save();
+                }
+                if (changed) SettingsChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
         public bool ShowMeterOnlyInCombat
         {
             get { lock (_lock) return _data.ShowMeterOnlyInCombat; }
@@ -642,6 +658,9 @@ namespace AionDpsMeter.Services.Services.Settings
 
             [JsonPropertyName("pinUserOnTop")]
             public bool PinUserOnTop { get; set; } = true;
+
+            [JsonPropertyName("showItemLevel")]
+            public bool ShowItemLevel { get; set; } = true;
 
             [JsonPropertyName("showMeterOnlyInCombat")]
             public bool ShowMeterOnlyInCombat { get; set; }

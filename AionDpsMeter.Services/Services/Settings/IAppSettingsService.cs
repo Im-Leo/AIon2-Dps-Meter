@@ -17,6 +17,7 @@ namespace AionDpsMeter.Services.Services.Settings
 
         string ToggleVisibilityHotkey { get; set; }
         bool PinUserOnTop { get; set; }
+        bool ShowItemLevel { get; set; }
         bool ShowMeterOnlyInCombat { get; set; }
         bool ShowOnlyOverGame { get; set; }
         /// <summary>Modifier held to make overlays movable: "Ctrl", "Shift" or "Alt".</summary>

@@ -131,6 +131,10 @@ namespace AionDpsMeter.Services.Services.Session
                 .ToList();
         }
 
+        // Same population as GetPlayerStats: sessions with only DoT hits are not listed, so they don't count either.
+        public long SumDamage(Func<PlayerSession, bool> counts) =>
+            playerSessions.Values.Where(s => s.HitCount > 0 && counts(s)).Sum(s => s.TotalDamage);
+
         public IReadOnlyList<PlayerDamage> GetHits(long playerId) =>
             playerSessions.TryGetValue(playerId, out var session) ? session.Hits : [];
 
