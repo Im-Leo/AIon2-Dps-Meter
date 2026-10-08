@@ -14,6 +14,8 @@ internal static class NativeMethods
     // Extended window styles.
     public const long WS_EX_TRANSPARENT = 0x00000020L;
     public const long WS_EX_NOACTIVATE = 0x08000000L;
+    public const long WS_EX_TOOLWINDOW = 0x00000080L;
+    public const long WS_EX_APPWINDOW = 0x00040000L;
 
     // WinEvent hooks.
     public const uint EVENT_SYSTEM_FOREGROUND = 0x0003;

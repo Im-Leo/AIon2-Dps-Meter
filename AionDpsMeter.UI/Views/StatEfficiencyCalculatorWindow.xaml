@@ -1,4 +1,4 @@
-<Window x:Class="AionDpsMeter.UI.StatEfficiencyCalculatorWindow"
+<windowing:AppWindow xmlns:windowing="clr-namespace:AionDpsMeter.UI.Services.Windowing" x:Class="AionDpsMeter.UI.StatEfficiencyCalculatorWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -19,7 +19,7 @@
         ResizeMode="CanResizeWithGrip"
         MouseLeftButtonDown="Window_MouseLeftButtonDown">
 
-    <Window.Resources>
+    <windowing:AppWindow.Resources>
         <FontFamily x:Key="MeterMonoFont">pack://application:,,,/AionDpsMeter.UI;component/Assets/Fonts/#JetBrains Mono</FontFamily>
 
         <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
@@ -73,7 +73,7 @@
         <Style x:Key="RowGridStyle" TargetType="Grid">
             <Setter Property="Margin" Value="0,1,0,1"/>
         </Style>
-    </Window.Resources>
+    </windowing:AppWindow.Resources>
 
     <Border Background="#EB0D1117"  BorderBrush="#3A4658" BorderThickness="1" CornerRadius="6">
         <Grid>
@@ -233,4 +233,4 @@
             </ScrollViewer>
         </Grid>
     </Border>
-</Window>
+</windowing:AppWindow>

@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Components.WebView.Wpf;
 
 namespace AionDpsMeter.UI.Views
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : AppWindow
     {
         private readonly IAppSettingsService settingsService;
         private DispatcherTimer? _saveBoundsTimer;

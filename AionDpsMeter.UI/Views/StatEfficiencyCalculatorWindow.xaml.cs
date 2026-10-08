@@ -1,3 +1,4 @@
+using AionDpsMeter.UI.Services.Windowing;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -6,7 +7,7 @@ using System.Globalization;
 
 namespace AionDpsMeter.UI
 {
-    public partial class StatEfficiencyCalculatorWindow : Window
+    public partial class StatEfficiencyCalculatorWindow : AppWindow
     {
         public StatEfficiencyCalculatorWindow()
         {

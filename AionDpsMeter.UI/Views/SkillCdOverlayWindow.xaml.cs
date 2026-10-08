@@ -8,7 +8,7 @@ namespace AionDpsMeter.UI.Views
     /// <summary>
     /// Interaction logic for SkillCdOverlayWindow.xaml
     /// </summary>
-    public partial class SkillCdOverlayWindow : Window
+    public partial class SkillCdOverlayWindow : AppWindow
     {
         public SkillCdOverlayWindow()
         {

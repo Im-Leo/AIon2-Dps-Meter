@@ -24,7 +24,7 @@ namespace AionDpsMeter.UI.Services.Windowing
     /// WhatsNew) don't use this at all — they stay their own hand-authored
     /// Window/XAML classes, built the same way you already build them.
     /// </summary>
-    public partial class BlazorWindow : System.Windows.Window
+    public partial class BlazorWindow : AppWindow
     {
         /// <param name="services">Usually App.AppHost.Services.</param>
         /// <param name="componentType">The Razor page/component to render at #app (e.g. typeof(SettingsPage)).</param>
