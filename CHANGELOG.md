@@ -10,6 +10,7 @@
 - **Show Meter Only in Combat**: an optional setting (Settings → Appearance) that hides the meter outside combat. It appears when you or your group deal damage and hides 10 s after the last hit; overlays are unaffected, and holding Ctrl or opening Settings shows it anyway.
 - **Keep Me on Top**: pins your row first in the player list and shows your real DPS rank. On by default; toggle it in Settings → Appearance.
 - **Own row highlight**: your row has a gold outline and name, so you can find yourself at a glance.
+- **Rank medals**: the top three damage dealers get gold, silver and bronze rank badges; the rest keep the plain one.
 
 ### Changed
 - The meter refreshes 10 times per second and re-renders only when a displayed value changes; bar movement is animated in CSS. This keeps its embedded browser from falling behind in large fights.
