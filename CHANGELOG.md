@@ -13,6 +13,7 @@
 - **Rank medals**: the top three damage dealers get gold, silver and bronze rank badges; the rest keep the plain one.
 - **Party and force awareness**: the meter reads your party and force rosters from the game. Party members get a 👥 before their name and other force members a ⚔️. While you're in a party or force only your group is listed and the total counts only your group; strangers hitting the same target are still recorded, just not shown. Solo, everyone is listed as before.
 - **Item level**: shown above the class icon (combat power stays below) for you and your party and force members, read from the group rosters. Combat power is now also filled in from party rosters. Players outside your group show neither, since the game doesn't send them. Toggle it in Settings → Appearance → Show Item Level (on by default).
+- **Earlier self-recognition**: the meter now finds your row from your own skill cooldowns within the first few casts, instead of waiting for a zone change, so the highlight, Keep Me on Top, Solo Mode and your display name work right away (including in forces and the open world).
 
 ### Changed
 - The meter refreshes 10 times per second and re-renders only when a displayed value changes; bar movement is animated in CSS. This keeps its embedded browser from falling behind in large fights.
@@ -24,6 +25,7 @@
 - The meter runs as administrator (UAC prompt at launch). AION2 runs elevated, and Windows only delivers its keyboard input to hooks at the same privilege level, which hold-to-move needs.
 - Only one meter runs at a time: starting it again brings the running meter back (like Show in the tray menu) instead of opening a second copy.
 - Meter windows no longer appear in Alt+Tab or on the taskbar; the meter is reached through its own windows and the tray icon.
+- Your row is no longer lost 10 minutes into an instance when the meter recognized you from your cooldowns (meter started after you entered): the cleanup of unknown players skips you.
 
 ### Fixed
 - The app slowed down over long sessions: every mob ever hit kept an entry that was scanned on each damage and buff event. Finished entries are now dropped.
