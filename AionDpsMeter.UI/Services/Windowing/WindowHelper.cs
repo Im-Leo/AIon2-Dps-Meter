@@ -18,12 +18,14 @@ namespace AionDpsMeter.UI.Services.Windowing
         public event EventHandler? WindowStateUpdated;
         public bool IsBuffEdit { get; private set; }
         public bool IsSkillCdEdit { get; private set; }
+        public bool IsTimersEdit { get; private set; }
         public bool IsMeterEdit { get; private set; }
         public bool IsMoveKeyHeld => _moveKeyHeld;
         public bool IsSettingsOpen => _settingsOpen;
 
         private bool IsBuffOverlayEnabled { get; set; }
         private bool IsSkillCdOverlayEnabled { get; set; }
+        private bool IsTimersOverlayEnabled { get; set; }
 
         // The meter and overlays accept the mouse while Settings is open or while the move key is held; otherwise they are click-through.
         private bool _settingsOpen;
@@ -40,11 +42,11 @@ namespace AionDpsMeter.UI.Services.Windowing
         private readonly ModifierKeyWatcher moveKeyWatcher;
 
         // Default spots as fractions of the game window, until the user drags a window somewhere else.
-        // The overlays are centered horizontally for their actual width; only their height is a fraction.
+        // The timers overlay is centered horizontally for its actual width; only its height is a fraction.
         private static readonly Point MeterDefault = new(0, 0.535);
-        private const double OverlaysDefaultTop = 0.0868;
+        private const double TimersOverlayDefaultTop = 0.0868;
         private const double OverlayGap = 8;
-        private static readonly WindowKey[] OverlayKeys = [WindowKey.BuffOverlay, WindowKey.SkillCdOverlay];
+        private static readonly WindowKey[] OverlayKeys = [WindowKey.TimersOverlay, WindowKey.BuffOverlay, WindowKey.SkillCdOverlay];
         private static readonly WindowKey[] ClickThroughKeys = [WindowKey.Main, .. OverlayKeys];
 
         public WindowHelper(IWindowManagerService windowManager, IServiceProvider serviceProvider, CombatSessionManager sessionManager, IAppSettingsService settingsService, UpdateCheckerService updateService, GameFocusWatcher focusWatcher, ModifierKeyWatcher moveKeyWatcher)
@@ -60,6 +62,7 @@ namespace AionDpsMeter.UI.Services.Windowing
 
             IsBuffOverlayEnabled = settingsService.BufOverlaySettings.Enabled;
             IsSkillCdOverlayEnabled = settingsService.SkillCdOverlaySettings.Enabled;
+            IsTimersOverlayEnabled = settingsService.TimersOverlaySettings.Enabled;
             settingsService.SettingsChanged += SettingsChanged;
         }
 
@@ -76,6 +79,12 @@ namespace AionDpsMeter.UI.Services.Windowing
                 IsSkillCdOverlayEnabled = settingsService.SkillCdOverlaySettings.Enabled;
                 ManageSkillCdOverlay();
             }
+
+            if (IsTimersOverlayEnabled != settingsService.TimersOverlaySettings.Enabled)
+            {
+                IsTimersOverlayEnabled = settingsService.TimersOverlaySettings.Enabled;
+                ManageTimersOverlay();
+            }
                 
         }
 
@@ -83,6 +92,7 @@ namespace AionDpsMeter.UI.Services.Windowing
         {
             ManageBuffOverlay();
             ManageSkillCdOverlay();
+            ManageTimersOverlay();
             foreach (var key in ClickThroughKeys)
                 windowManager.SetClickThrough(key);
             focusWatcher.GameFocused += (_, _) => PlaceWindowsOverGame();
@@ -100,10 +110,11 @@ namespace AionDpsMeter.UI.Services.Windowing
         private void ApplyOverlayEditMode()
         {
             var editable = _settingsOpen || _moveKeyHeld;
-            if (editable == IsMeterEdit) return;
+            if (editable == IsTimersEdit) return;
 
             IsBuffEdit = editable;
             IsSkillCdEdit = editable;
+            IsTimersEdit = editable;
             IsMeterEdit = editable;
 
             // Listeners may change window styles (e.g. the meter's resize grip), so click-through is applied last.
@@ -128,9 +139,13 @@ namespace AionDpsMeter.UI.Services.Windowing
 
             windowManager.PlaceOverGame(WindowKey.Main, gameRect, _ => At(MeterDefault));
 
-            // The buff and skill-cooldown overlays stack near the top, centered.
-            var top = gameRect.Top + OverlaysDefaultTop * gameRect.Height;
-            foreach (var key in OverlayKeys)
+            var timersTop = gameRect.Top + TimersOverlayDefaultTop * gameRect.Height;
+            var timersSize = windowManager.PlaceOverGame(WindowKey.TimersOverlay, gameRect,
+                s => new Point(gameRect.Left + (gameRect.Width - s.Width) / 2, timersTop));
+
+            // The buff and skill-cooldown overlays stack under the timers overlay's default spot.
+            var top = timersTop + timersSize.Height + OverlayGap;
+            foreach (var key in OverlayKeys.Where(k => k != WindowKey.TimersOverlay))
             {
                 var overlayTop = top;
                 var size = windowManager.PlaceOverGame(key, gameRect,
@@ -244,6 +259,14 @@ namespace AionDpsMeter.UI.Services.Windowing
         private void HideSkillCdOverlay()
         {
             windowManager.Hide(WindowKey.SkillCdOverlay);
+        }
+
+        private void ManageTimersOverlay()
+        {
+            if (IsTimersOverlayEnabled)
+                windowManager.Open(WindowKey.TimersOverlay, new TimersOverlayWindow(), true);
+            else
+                windowManager.Hide(WindowKey.TimersOverlay);
         }
     }
 }

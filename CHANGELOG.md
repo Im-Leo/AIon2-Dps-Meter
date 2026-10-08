@@ -16,14 +16,16 @@
 - **Earlier self-recognition**: the meter now finds your row from your own skill cooldowns within the first few casts, instead of waiting for a zone change, so the highlight, Keep Me on Top, Solo Mode and your display name work right away (including in forces and the open world).
 - **My Display Name**: an optional name shown for your character everywhere (meter, details, history), set at the top of Settings → Appearance. Empty keeps the game's name.
 - **Solo Mode**: the meter shows only your row and its total counts only your own damage. Switch it with SOLO on the meter bar (colored when on, grayed out when off) or in Settings → Appearance. It turns off automatically while you're in a party or force and comes back after you leave. Other players are never shown in solo; until your row is recognized (your first cooldown skills, or a zone change) the meter shows a short hint instead.
+- **Timers overlay**: a floating overlay with the local clock (24 h or 12 h) and the Spacetime Rift countdown, configured in the new Settings → Clock & Timers tab. On by default, with the 24 h clock and the Spacetime Rift timer shown.
+- **Spacetime Rift timer**: the countdown to the next spawn. The schedule is read from `GameData/Assets/spacetime_rift.json` (US Eastern wall-clock times, DST-aware). An optional tray notification and sound fire a configurable number of minutes before each spawn (Settings → Clock & Timers).
+- New defaults: the meter is 473×297 at the game's left edge, the timers overlay centered near the top, and player rows use class colors.
+- **Spacetime Rift entry and stay timers**: when the portals spawn, the countdown switches to the time left to enter ("Rift open", 10 minutes); after you go through a portal to the other faction's server, it shows the time left inside ("In rift", 60 minutes) until the time runs out or you are ported back; a rift can be entered once per opening, so after that it counts down to the next spawn. The game sends neither duration, so both are set in `spacetime_rift.json`. The countdown turns amber, then red, as time runs out, and blinks in its last minute.
 
 ### Changed
 - The meter refreshes 10 times per second and re-renders only when a displayed value changes; bar movement is animated in CSS. This keeps its embedded browser from falling behind in large fights.
 - A boss fight is marked completed and saved as soon as the boss dies, and fights left idle are completed when the history is opened, so they no longer stay "Active" after a dungeon's last boss.
 - Settings, combat history, logs, the icon cache and packet logs are stored in `%LocalAppData%\Aion2DPSMeter` instead of the program folder, so they survive updates and deleting the folder. On first start, data from earlier versions is copied there; nothing is overwritten or removed.
 - The Settings window can be moved by dragging anywhere on its header bar (previously only the title text), and is wider so all tabs fit on one row.
-- Player rows use class colors by default.
-- The meter's default size is 473×297, placed at the game's left edge.
 - The meter runs as administrator (UAC prompt at launch). AION2 runs elevated, and Windows only delivers its keyboard input to hooks at the same privilege level, which hold-to-move needs.
 - Only one meter runs at a time: starting it again brings the running meter back (like Show in the tray menu) instead of opening a second copy.
 - Meter windows no longer appear in Alt+Tab or on the taskbar; the meter is reached through its own windows and the tray icon.

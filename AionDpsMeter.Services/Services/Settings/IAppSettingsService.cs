@@ -16,14 +16,6 @@ namespace AionDpsMeter.Services.Services.Settings
         bool RelativeProgressBar { get; set; }
 
         string ToggleVisibilityHotkey { get; set; }
-        bool PinUserOnTop { get; set; }
-        bool TotalShowsOnlyMyDps { get; set; }
-        bool ShowItemLevel { get; set; }
-        bool ShowMeterOnlyInCombat { get; set; }
-        string UserNameOverride { get; set; }
-        bool ShowOnlyOverGame { get; set; }
-        /// <summary>Modifier held to make overlays movable: "Ctrl", "Shift" or "Alt".</summary>
-        string OverlayMoveKey { get; set; }
 
         // Main window size; its position is game-relative
         double? WindowWidth { get; set; }
@@ -44,6 +36,16 @@ namespace AionDpsMeter.Services.Services.Settings
         double StatCalcBossSmiteResist { get; set; }
         OverlaySettings BufOverlaySettings { get; set; }
         OverlaySettings SkillCdOverlaySettings { get; set; }
+        SpacetimeRiftSettings SpacetimeRiftSettings { get; set; }
+        TimersOverlaySettings TimersOverlaySettings { get; set; }
+        bool PinUserOnTop { get; set; }
+        bool TotalShowsOnlyMyDps { get; set; }
+        bool ShowItemLevel { get; set; }
+        bool ShowMeterOnlyInCombat { get; set; }
+        string UserNameOverride { get; set; }
+        bool ShowOnlyOverGame { get; set; }
+        /// <summary>Modifier held to make overlays movable: "Ctrl", "Shift" or "Alt".</summary>
+        string OverlayMoveKey { get; set; }
         bool TryGetGameRelativePosition(WindowKey key, out GameRelativePosition? position);
         void SetGameRelativePosition(WindowKey key, GameRelativePosition position);
 

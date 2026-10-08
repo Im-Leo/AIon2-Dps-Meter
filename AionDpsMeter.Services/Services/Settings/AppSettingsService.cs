@@ -18,7 +18,41 @@ namespace AionDpsMeter.Services.Services.Settings
             _data = Load();
             _data.HistoryRetantionPeriod = Math.Clamp(_data.HistoryRetantionPeriod, 1, 9999);
             _data.GameRelativePositions ??= [];
+            _data.SpacetimeRiftSettings ??= new SpacetimeRiftSettings();
+            _data.SpacetimeRiftSettings.LeadMinutes = Math.Clamp(_data.SpacetimeRiftSettings.LeadMinutes,
+                SpacetimeRiftSettings.MinLeadMinutes, SpacetimeRiftSettings.MaxLeadMinutes);
+            _data.TimersOverlaySettings ??= new TimersOverlaySettings();
             _data.UserNameOverride ??= string.Empty;
+        }
+
+        public TimersOverlaySettings TimersOverlaySettings
+        {
+            get { lock (_lock) return _data.TimersOverlaySettings; }
+            set
+            {
+                lock (_lock)
+                {
+                    _data.TimersOverlaySettings = value;
+                    Save();
+                }
+                SettingsChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public SpacetimeRiftSettings SpacetimeRiftSettings
+        {
+            get { lock (_lock) return _data.SpacetimeRiftSettings; }
+            set
+            {
+                lock (_lock)
+                {
+                    value.LeadMinutes = Math.Clamp(value.LeadMinutes,
+                        SpacetimeRiftSettings.MinLeadMinutes, SpacetimeRiftSettings.MaxLeadMinutes);
+                    _data.SpacetimeRiftSettings = value;
+                    Save();
+                }
+                SettingsChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         public string OverlayMoveKey
@@ -32,6 +66,22 @@ namespace AionDpsMeter.Services.Services.Settings
                     var normalized = value is "Shift" or "Alt" ? value : "Ctrl";
                     changed = _data.OverlayMoveKey != normalized;
                     _data.OverlayMoveKey = normalized;
+                    if (changed) Save();
+                }
+                if (changed) SettingsChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public bool ShowOnlyOverGame
+        {
+            get { lock (_lock) return _data.ShowOnlyOverGame; }
+            set
+            {
+                bool changed;
+                lock (_lock)
+                {
+                    changed = _data.ShowOnlyOverGame != value;
+                    _data.ShowOnlyOverGame = value;
                     if (changed) Save();
                 }
                 if (changed) SettingsChanged?.Invoke(this, EventArgs.Empty);
@@ -70,6 +120,22 @@ namespace AionDpsMeter.Services.Services.Settings
             }
         }
 
+        public bool ShowMeterOnlyInCombat
+        {
+            get { lock (_lock) return _data.ShowMeterOnlyInCombat; }
+            set
+            {
+                bool changed;
+                lock (_lock)
+                {
+                    changed = _data.ShowMeterOnlyInCombat != value;
+                    _data.ShowMeterOnlyInCombat = value;
+                    if (changed) Save();
+                }
+                if (changed) SettingsChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
         public bool ShowItemLevel
         {
             get { lock (_lock) return _data.ShowItemLevel; }
@@ -97,38 +163,6 @@ namespace AionDpsMeter.Services.Services.Settings
                 {
                     changed = _data.UserNameOverride != trimmed;
                     _data.UserNameOverride = trimmed;
-                    if (changed) Save();
-                }
-                if (changed) SettingsChanged?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        public bool ShowMeterOnlyInCombat
-        {
-            get { lock (_lock) return _data.ShowMeterOnlyInCombat; }
-            set
-            {
-                bool changed;
-                lock (_lock)
-                {
-                    changed = _data.ShowMeterOnlyInCombat != value;
-                    _data.ShowMeterOnlyInCombat = value;
-                    if (changed) Save();
-                }
-                if (changed) SettingsChanged?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        public bool ShowOnlyOverGame
-        {
-            get { lock (_lock) return _data.ShowOnlyOverGame; }
-            set
-            {
-                bool changed;
-                lock (_lock)
-                {
-                    changed = _data.ShowOnlyOverGame != value;
-                    _data.ShowOnlyOverGame = value;
                     if (changed) Save();
                 }
                 if (changed) SettingsChanged?.Invoke(this, EventArgs.Empty);
@@ -684,14 +718,11 @@ namespace AionDpsMeter.Services.Services.Settings
             [JsonPropertyName("skillCdOverlaySettings")]
             public OverlaySettings SkillCdOverlaySettings { get; set; } = new OverlaySettings();
 
-            [JsonPropertyName("userNameOverride")]
-            public string UserNameOverride { get; set; } = string.Empty;
+            [JsonPropertyName("spacetimeRiftSettings")]
+            public SpacetimeRiftSettings SpacetimeRiftSettings { get; set; } = new SpacetimeRiftSettings();
 
-            [JsonPropertyName("showOnlyOverGame")]
-            public bool ShowOnlyOverGame { get; set; } = true;
-
-            [JsonPropertyName("overlayMoveKey")]
-            public string OverlayMoveKey { get; set; } = "Ctrl";
+            [JsonPropertyName("timersOverlaySettings")]
+            public TimersOverlaySettings TimersOverlaySettings { get; set; } = new TimersOverlaySettings();
 
             [JsonPropertyName("pinUserOnTop")]
             public bool PinUserOnTop { get; set; } = true;
@@ -704,6 +735,15 @@ namespace AionDpsMeter.Services.Services.Settings
 
             [JsonPropertyName("showMeterOnlyInCombat")]
             public bool ShowMeterOnlyInCombat { get; set; }
+
+            [JsonPropertyName("userNameOverride")]
+            public string UserNameOverride { get; set; } = string.Empty;
+
+            [JsonPropertyName("showOnlyOverGame")]
+            public bool ShowOnlyOverGame { get; set; } = true;
+
+            [JsonPropertyName("overlayMoveKey")]
+            public string OverlayMoveKey { get; set; } = "Ctrl";
 
         }
     }

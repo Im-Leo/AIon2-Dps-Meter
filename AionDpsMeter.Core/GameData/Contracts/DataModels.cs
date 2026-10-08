@@ -19,4 +19,13 @@ namespace AionDpsMeter.Core.GameData.Contracts
         public bool isDummy { get; set; }
     }
 
+    public sealed class EventScheduleFile
+    {
+        public string TimeZone { get; set; } = string.Empty;
+        public List<string> SpawnTimes { get; set; } = [];
+        public int EntryWindowMinutes { get; set; }
+        public int StayMinutes { get; set; }
+        public List<int> PortalTypes { get; set; } = [];
+    }
+
 }
