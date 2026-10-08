@@ -101,6 +101,8 @@ dotnet restore
 dotnet build
 ```
 
+Skill and buff icons ship in `AionDpsMeter.UI/wwwroot/icons/skills`. When the game data adds skills, refresh them with `dotnet run --project tools/SkillIconPacker`.
+
 ### Self-contained release
 
 ```bash

@@ -47,6 +47,11 @@ namespace AionDpsMeter.Core.Data
                 return cached;
 
             var fileName = SanitizeFileName(url);
+            if (PackedPath(fileName) is { } packed)
+            {
+                memoryCache[url] = packed;
+                return packed;
+            }
             var localPath = Path.Combine(cacheDirectory, fileName);
 
             if (File.Exists(localPath))
@@ -88,6 +93,11 @@ namespace AionDpsMeter.Core.Data
                 return cached;
 
             var fileName = SanitizeFileName(url);
+            if (PackedPath(fileName) is { } packed)
+            {
+                memoryCache[url] = packed;
+                return packed;
+            }
             var localPath = Path.Combine(cacheDirectory, fileName);
             if (File.Exists(localPath))
             {
@@ -98,6 +108,13 @@ namespace AionDpsMeter.Core.Data
             _ = Task.Run(() => GetLocalPathAsync(url));
 
             return null;
+        }
+
+        // Icons shipped with the app come first; the cache and the CDN only serve skills newer than the pack.
+        private static string? PackedPath(string fileName)
+        {
+            var path = Path.Combine(AppPaths.SkillIconPackDirectory, fileName);
+            return File.Exists(path) ? path : null;
         }
 
         private static string SanitizeFileName(string url)

@@ -32,6 +32,7 @@
 - Your row is no longer lost 10 minutes into an instance when the meter recognized you from your cooldowns (meter started after you entered): the cleanup of unknown players skips you.
 - Combat history keeps one encounter window and one player-details window: clicking another encounter or player loads it into the open window. The meter's own player-details window works the same way.
 - Esc in any meter window closes the most recently opened window (Settings, history, details, and so on), one per press; the meter and its overlays stay open.
+- Skill and buff icons ship with the app (383 icons, refreshed with `tools/SkillIconPacker`), so the details windows, overlays and Settings pick-lists show them at once instead of downloading on first use.
 
 ### Fixed
 - The app slowed down over long sessions: every mob ever hit kept an entry that was scanned on each damage and buff event. Finished entries are now dropped.
