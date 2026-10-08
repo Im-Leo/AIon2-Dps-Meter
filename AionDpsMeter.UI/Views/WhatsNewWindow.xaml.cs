@@ -1,3 +1,4 @@
+using AionDpsMeter.UI.Services.Windowing;
 using AionDpsMeter.Services.Services.Update;
 using System.Diagnostics;
 using System.IO;
@@ -9,7 +10,7 @@ using System.Windows.Media;
 
 namespace AionDpsMeter.UI
 {
-    public partial class WhatsNewWindow : Window
+    public partial class WhatsNewWindow : AppWindow
     {
         private readonly ReleaseInfo _release;
         private readonly UpdateCheckerService _updateChecker;

@@ -1,3 +1,4 @@
+using AionDpsMeter.UI.Services.Windowing;
 using AionDpsMeter.UI.ViewModels;
 using System.Windows;
 using System.Windows.Input;
@@ -7,7 +8,7 @@ namespace AionDpsMeter.UI
     /// <summary>
     /// Interaction logic for PlayerDetailsWindow.xaml
     /// </summary>
-    public partial class PlayerDetailsWindow : Window
+    public partial class PlayerDetailsWindow : AppWindow
     {
         public PlayerDetailsWindow()
         {

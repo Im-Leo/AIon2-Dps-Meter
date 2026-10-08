@@ -1,3 +1,4 @@
+using AionDpsMeter.UI.Services.Windowing;
 using AionDpsMeter.Services.Services.Settings;
 using AionDpsMeter.UI.ViewModels;
 using AionDpsMeter.UI.ViewModels.History;
@@ -6,7 +7,7 @@ using System.Windows.Input;
 
 namespace AionDpsMeter.UI
 {
-    public partial class HistorySessionWindow : Window
+    public partial class HistorySessionWindow : AppWindow
     {
         private readonly IAppSettingsService _settingsService;
 

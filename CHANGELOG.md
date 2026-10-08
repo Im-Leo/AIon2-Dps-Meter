@@ -17,6 +17,7 @@
 - The meter's default size is 473×297, placed at the game's left edge.
 - The meter runs as administrator (UAC prompt at launch). AION2 runs elevated, and Windows only delivers its keyboard input to hooks at the same privilege level, which hold-to-move needs.
 - Only one meter runs at a time: starting it again brings the running meter back (like Show in the tray menu) instead of opening a second copy.
+- Meter windows no longer appear in Alt+Tab or on the taskbar; the meter is reached through its own windows and the tray icon.
 
 ### Fixed
 - The app slowed down over long sessions: every mob ever hit kept an entry that was scanned on each damage and buff event. Finished entries are now dropped.

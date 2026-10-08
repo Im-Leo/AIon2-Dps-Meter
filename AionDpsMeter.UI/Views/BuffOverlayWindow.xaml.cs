@@ -8,7 +8,7 @@ namespace AionDpsMeter.UI.Views
     /// <summary>
     /// Interaction logic for BuffOverlay.xaml
     /// </summary>
-    public partial class BuffOverlayWindow : Window
+    public partial class BuffOverlayWindow : AppWindow
     {
         public BuffOverlayWindow()
         {

@@ -1,4 +1,4 @@
-﻿<Window x:Class="AionDpsMeter.UI.HistorySessionWindow"
+﻿<windowing:AppWindow xmlns:windowing="clr-namespace:AionDpsMeter.UI.Services.Windowing" x:Class="AionDpsMeter.UI.HistorySessionWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -16,7 +16,7 @@
         ResizeMode="CanResizeWithGrip"
         MouseLeftButtonDown="Window_MouseLeftButtonDown">
 
-    <Window.Resources>
+    <windowing:AppWindow.Resources>
         <LinearGradientBrush x:Key="SessionPanelGradient" StartPoint="0,0" EndPoint="0,1">
             <GradientStop Color="#0F141D" Offset="0"/>
             <GradientStop Color="#0B1017" Offset="1"/>
@@ -60,7 +60,7 @@
             <Setter Property="Padding" Value="7,3"/>
             <Setter Property="Margin" Value="0,0,6,0"/>
         </Style>
-    </Window.Resources>
+    </windowing:AppWindow.Resources>
 
     <Border Background="{StaticResource SessionPanelGradient}"
             BorderBrush="#3A4658"
@@ -356,4 +356,4 @@
             </ListBox>
         </Grid>
     </Border>
-</Window>
+</windowing:AppWindow>

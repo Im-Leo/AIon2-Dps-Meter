@@ -1,4 +1,4 @@
-<Window x:Class="AionDpsMeter.UI.Services.Windowing.BlazorWindow"
+<windowing:AppWindow xmlns:windowing="clr-namespace:AionDpsMeter.UI.Services.Windowing" x:Class="AionDpsMeter.UI.Services.Windowing.BlazorWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:blazor="clr-namespace:Microsoft.AspNetCore.Components.WebView.Wpf;assembly=Microsoft.AspNetCore.Components.WebView.Wpf"
@@ -10,4 +10,4 @@
         >
 
     <blazor:BlazorWebView x:Name="BlazorWebView" HostPage="wwwroot/index.html" Background="Transparent" />
-</Window>
+</windowing:AppWindow>
