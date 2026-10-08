@@ -19,6 +19,7 @@ namespace AionDpsMeter.Services.Services.Settings
         bool PinUserOnTop { get; set; }
         bool ShowItemLevel { get; set; }
         bool ShowMeterOnlyInCombat { get; set; }
+        string UserNameOverride { get; set; }
         bool ShowOnlyOverGame { get; set; }
         /// <summary>Modifier held to make overlays movable: "Ctrl", "Shift" or "Alt".</summary>
         string OverlayMoveKey { get; set; }

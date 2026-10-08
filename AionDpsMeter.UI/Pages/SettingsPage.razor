@@ -37,6 +37,17 @@
         @* ---------------- APPEARANCE ---------------- *@
         <section class="settings-group @(_activeGroup == "appearance" ? "" : "is-hidden")">
 
+            <SettingRow Title="My Display Name" Description="Name shown for your character everywhere; leave empty to use the game's name"
+                        Tooltip="The game sends your character name only on certain events (logging in, changing zone or teleporting); until then your row shows your player id. A name set here is shown for your row instead, as soon as the meter knows which row is you.">
+                <ValueSlot>
+                    <div class="number-field-wrap">
+                        <input class="number-field text-field" type="text" maxlength="24" placeholder="Game name"
+                               value="@settings.UserNameOverride"
+                               @onchange="e => settings.UserNameOverride = e.Value?.ToString() ?? string.Empty" />
+                    </div>
+                </ValueSlot>
+            </SettingRow>
+
             <div class="settings-section-label">WINDOW LAYOUT</div>
 
             <div class="style-picker" role="radiogroup" aria-label="Window layout">
