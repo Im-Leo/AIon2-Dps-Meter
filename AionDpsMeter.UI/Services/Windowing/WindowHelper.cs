@@ -3,6 +3,7 @@ using AionDpsMeter.Services.Services.Settings;
 using AionDpsMeter.Services.Services.Update;
 using AionDpsMeter.Core.Windowing;
 using AionDpsMeter.UI.Pages;
+using AionDpsMeter.UI.Services.Input;
 using AionDpsMeter.UI.Utils;
 using AionDpsMeter.UI.ViewModels;
 using AionDpsMeter.UI.Views;
@@ -17,9 +18,15 @@ namespace AionDpsMeter.UI.Services.Windowing
         public EventHandler? WindowStateUpdated { get; set; }
         public bool IsBuffEdit { get; private set; }
         public bool IsSkillCdEdit { get; private set; }
+        public bool IsMeterEdit { get; private set; }
+        public bool IsMoveKeyHeld => _moveKeyHeld;
 
         private bool IsBuffOverlayEnabled { get; set; }
         private bool IsSkillCdOverlayEnabled { get; set; }
+
+        // The meter and overlays accept the mouse while Settings is open or while the move key is held; otherwise they are click-through.
+        private bool _settingsOpen;
+        private bool _moveKeyHeld;
 
         private MainWindow MainWindow => serviceProvider.GetRequiredService<MainWindow>();
 
@@ -29,6 +36,7 @@ namespace AionDpsMeter.UI.Services.Windowing
         private readonly IAppSettingsService settingsService;
         private readonly UpdateCheckerService updateService;
         private readonly GameFocusWatcher focusWatcher;
+        private readonly ModifierKeyWatcher moveKeyWatcher;
 
         // Default spots as fractions of the game window, until the user drags a window somewhere else.
         // The overlays are centered horizontally for their actual width; only their height is a fraction.
@@ -36,8 +44,9 @@ namespace AionDpsMeter.UI.Services.Windowing
         private const double OverlaysDefaultTop = 0.0868;
         private const double OverlayGap = 8;
         private static readonly WindowKey[] OverlayKeys = [WindowKey.BuffOverlay, WindowKey.SkillCdOverlay];
+        private static readonly WindowKey[] ClickThroughKeys = [WindowKey.Main, .. OverlayKeys];
 
-        public WindowHelper(IWindowManagerService windowManager, IServiceProvider serviceProvider, CombatSessionManager sessionManager, IAppSettingsService settingsService, UpdateCheckerService updateService, GameFocusWatcher focusWatcher)
+        public WindowHelper(IWindowManagerService windowManager, IServiceProvider serviceProvider, CombatSessionManager sessionManager, IAppSettingsService settingsService, UpdateCheckerService updateService, GameFocusWatcher focusWatcher, ModifierKeyWatcher moveKeyWatcher)
         {
 
             this.windowManager = windowManager;
@@ -46,6 +55,7 @@ namespace AionDpsMeter.UI.Services.Windowing
             this.settingsService = settingsService;
             this.updateService = updateService;
             this.focusWatcher = focusWatcher;
+            this.moveKeyWatcher = moveKeyWatcher;
 
             IsBuffOverlayEnabled = settingsService.BufOverlaySettings.Enabled;
             IsSkillCdOverlayEnabled = settingsService.SkillCdOverlaySettings.Enabled;
@@ -72,11 +82,36 @@ namespace AionDpsMeter.UI.Services.Windowing
         {
             ManageBuffOverlay();
             ManageSkillCdOverlay();
-            windowManager.SetClickThrough(WindowKey.BuffOverlay);
-            windowManager.SetClickThrough(WindowKey.SkillCdOverlay);
+            foreach (var key in ClickThroughKeys)
+                windowManager.SetClickThrough(key);
             focusWatcher.GameFocused += (_, _) => PlaceWindowsOverGame();
             focusWatcher.GameMoved += (_, _) => PlaceWindowsOverGame();
             PlaceWindowsOverGame();
+
+            moveKeyWatcher.HeldChanged += (_, _) =>
+            {
+                _moveKeyHeld = moveKeyWatcher.IsHeld;
+                ApplyOverlayEditMode();
+            };
+            moveKeyWatcher.Start();
+        }
+
+        private void ApplyOverlayEditMode()
+        {
+            var editable = _settingsOpen || _moveKeyHeld;
+            if (editable == IsMeterEdit) return;
+
+            IsBuffEdit = editable;
+            IsSkillCdEdit = editable;
+            IsMeterEdit = editable;
+
+            // Listeners may change window styles (e.g. the meter's resize grip), so click-through is applied last.
+            WindowStateUpdated?.Invoke(this, EventArgs.Empty);
+            foreach (var key in ClickThroughKeys)
+            {
+                if (editable) windowManager.RestoreClickThrough(key);
+                else windowManager.SetClickThrough(key);
+            }
         }
 
         /// <summary>
@@ -106,11 +141,8 @@ namespace AionDpsMeter.UI.Services.Windowing
 
         public void OpenSettings()
         {
-            IsBuffEdit = true;
-            IsSkillCdEdit = true;
-            windowManager.RestoreClickThrough(WindowKey.BuffOverlay);
-            windowManager.RestoreClickThrough(WindowKey.SkillCdOverlay);
-            WindowStateUpdated?.Invoke(this, EventArgs.Empty);
+            _settingsOpen = true;
+            ApplyOverlayEditMode();
             var win = new BlazorWindow(App.AppHost.Services, typeof(SettingsPage))
             {
                 Width = 500,
@@ -121,11 +153,8 @@ namespace AionDpsMeter.UI.Services.Windowing
 
         public void CloseSettings()
         {
-            IsBuffEdit = false;
-            IsSkillCdEdit = false;
-            windowManager.SetClickThrough(WindowKey.BuffOverlay);
-            windowManager.SetClickThrough(WindowKey.SkillCdOverlay);
-            WindowStateUpdated?.Invoke(this, EventArgs.Empty);
+            _settingsOpen = false;
+            ApplyOverlayEditMode();
             windowManager.Hide(WindowKey.Settings);
         }
         public void OpenHistory()

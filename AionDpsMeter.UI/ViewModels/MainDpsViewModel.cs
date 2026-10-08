@@ -24,6 +24,7 @@ namespace AionDpsMeter.UI.ViewModels
         public List<PlayerRenderState> Players = new();
 
         public string CombatDuration = "00:00";
+        public bool IsEditable => windowHelper.IsMeterEdit;
         public string TotalRaidDamageFormatted = "0/s";
         public string PingDisplay = "-- ms";
         public string PingColor = "#888888";
@@ -43,6 +44,7 @@ namespace AionDpsMeter.UI.ViewModels
 
         private PeriodicTimer? _refreshTimer;
         private string _lastDisplaySignature = string.Empty;
+        private static readonly TimeSpan EditModeFollowUpRender = TimeSpan.FromMilliseconds(100);
         private CancellationTokenSource _cts = new();
 
         private readonly Func<Task> onStateChanged;
@@ -62,6 +64,7 @@ namespace AionDpsMeter.UI.ViewModels
         {
             sessionManager.PingUpdated += OnPingUpdated;
             settingsService.SettingsChanged += OnSettingsChanged;
+            windowHelper.WindowStateUpdated += OnEditModeChanged;
 
             RowScale = settingsService.PlayerRowScale > 0 ? settingsService.PlayerRowScale : 1.0;
 
@@ -85,6 +88,10 @@ namespace AionDpsMeter.UI.ViewModels
 
         private void UpdateData()
         {
+            // While the move key is held the meter is being positioned: pausing data renders keeps its
+            // browser idle so the drag and button clicks are handled immediately instead of queuing behind updates.
+            if (windowHelper.IsMoveKeyHeld) return;
+
             CombatDuration = sessionManager.GetCombatDuration().ToString(@"mm\:ss");
 
             var targetInfo = sessionManager.GetActiveTargetInfo();
@@ -196,6 +203,24 @@ namespace AionDpsMeter.UI.ViewModels
             else { PingColor = "#F44747"; PingLevel = 1; }
         }
 
+        private void OnEditModeChanged(object? sender, EventArgs e)
+        {
+            onStateChanged.Invoke();
+            _ = RenderAgainAsync();
+        }
+
+        // The meter's browser can keep showing the previous frame until another render arrives, and with
+        // change-only rendering none may come for a while; a follow-up render makes the edit outline match the key state.
+        private async Task RenderAgainAsync()
+        {
+            try
+            {
+                await Task.Delay(EditModeFollowUpRender, _cts.Token);
+                await onStateChanged.Invoke();
+            }
+            catch (OperationCanceledException) { }
+        }
+
         private void OnSettingsChanged(object? sender, EventArgs e)
         {
             RowScale = settingsService.PlayerRowScale > 0 ? settingsService.PlayerRowScale : 1.0;
@@ -257,6 +282,7 @@ namespace AionDpsMeter.UI.ViewModels
             _refreshTimer?.Dispose();
             sessionManager.PingUpdated -= OnPingUpdated;
             settingsService.SettingsChanged -= OnSettingsChanged;
+            windowHelper.WindowStateUpdated -= OnEditModeChanged;
         }
 
     }

@@ -19,6 +19,23 @@ namespace AionDpsMeter.Services.Services.Settings
             _data.GameRelativePositions ??= [];
         }
 
+        public string OverlayMoveKey
+        {
+            get { lock (_lock) return _data.OverlayMoveKey; }
+            set
+            {
+                bool changed;
+                lock (_lock)
+                {
+                    var normalized = value is "Shift" or "Alt" ? value : "Ctrl";
+                    changed = _data.OverlayMoveKey != normalized;
+                    _data.OverlayMoveKey = normalized;
+                    if (changed) Save();
+                }
+                if (changed) SettingsChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
         public bool ShowOnlyOverGame
         {
             get { lock (_lock) return _data.ShowOnlyOverGame; }
@@ -585,6 +602,9 @@ namespace AionDpsMeter.Services.Services.Settings
 
             [JsonPropertyName("showOnlyOverGame")]
             public bool ShowOnlyOverGame { get; set; } = true;
+
+            [JsonPropertyName("overlayMoveKey")]
+            public string OverlayMoveKey { get; set; } = "Ctrl";
 
         }
     }
