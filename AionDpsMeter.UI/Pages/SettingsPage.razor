@@ -141,6 +141,12 @@
                 </ValueSlot>
             </SettingRow>
 
+            <SettingRow Title="Solo Mode" Description="Show only your row, and count only your damage in the total (also the SOLO switch on the meter). Turns off automatically while you're in a party or force">
+                <ValueSlot>
+                    <ToggleSwitch Checked="settings.TotalShowsOnlyMyDps" CheckedChanged="v => { settings.TotalShowsOnlyMyDps = v; }" />
+                </ValueSlot>
+            </SettingRow>
+
             <SettingRow Title="Hide Player Names" Description="Replace names with obfuscated names — useful before sharing screenshots" IsLast="true">
                 <ValueSlot>
                     <ToggleSwitch Checked="settings.IsNicknameHidden" CheckedChanged="v => { settings.IsNicknameHidden = v; }" />

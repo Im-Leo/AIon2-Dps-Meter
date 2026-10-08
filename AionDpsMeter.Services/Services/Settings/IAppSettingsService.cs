@@ -16,6 +16,7 @@ namespace AionDpsMeter.Services.Services.Settings
         bool RelativeProgressBar { get; set; }
 
         string ToggleVisibilityHotkey { get; set; }
+        bool TotalShowsOnlyMyDps { get; set; }
         bool ShowItemLevel { get; set; }
         bool ShowMeterOnlyInCombat { get; set; }
         string UserNameOverride { get; set; }
