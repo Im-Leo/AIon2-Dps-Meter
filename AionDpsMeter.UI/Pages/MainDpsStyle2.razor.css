@@ -475,7 +475,8 @@
         font-size: 12.5px;
     }
 
-/* Rank badge: a dark pill with a dark ring keeps the number readable over any class-colored bar. */
+/* Rank badge: medals for the top three, a dark pill for the rest. Dark text on the medals and a dark ring keep
+   them readable over any class-colored bar (worst-case text contrast: gold 7.8:1, silver 8.2:1, bronze 4.7:1, plain 6.8:1). */
 .rank-badge {
     display: inline-flex;
     align-items: center;
@@ -492,6 +493,21 @@
     vertical-align: 0.1em;
     text-shadow: none;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 0 0 1.5px rgba(0, 0, 0, 0.85), 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+.rank-gold {
+    color: #2b1d00;
+    background: linear-gradient(180deg, #ffe58a 0%, #e3a92b 100%);
+}
+
+.rank-silver {
+    color: #1b1f24;
+    background: linear-gradient(180deg, #f1f4f7 0%, #aeb7c2 100%);
+}
+
+.rank-bronze {
+    color: #1a0b00;
+    background: linear-gradient(180deg, #eaa866 0%, #b8692a 100%);
 }
 
 .rank-plain {

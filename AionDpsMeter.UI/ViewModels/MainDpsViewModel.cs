@@ -268,6 +268,14 @@ namespace AionDpsMeter.UI.ViewModels
         //public string GetProgressClass(PlayerRenderState player) => $"dps-class-{player.ClassId}";
         public string GetCombatScoreDisplay(PlayerRenderState player) => (string.IsNullOrWhiteSpace(player.CombatPower) || player.CombatPower == "0") ? "" : player.CombatPower;
         public string GetSelfClass(PlayerRenderState player) => player.IsUser ? "is-self" : string.Empty;
+
+        public string GetRankClass(PlayerRenderState player) => player.Rank switch
+        {
+            1 => "rank-gold",
+            2 => "rank-silver",
+            3 => "rank-bronze",
+            _ => "rank-plain"
+        };
         public double ClampPercent(double value) => Math.Max(0, Math.Min(100, value));
 
         public string GetRowScaleStyle() => RowScale != 1.0
