@@ -63,6 +63,11 @@ public sealed class WindowManagerService(IAppSettingsService settingsService, Ga
 
             window.Closed += (_, _) => OnWindowClosed(slot, window);
             window.Show();
+
+            if (GameAnchoredKeys.Contains(key))
+            {
+                SnapGuard.Attach(window);
+            }
         });
     }
 
@@ -102,6 +107,10 @@ public sealed class WindowManagerService(IAppSettingsService settingsService, Ga
         RunOnUiThread(() =>
             WithWindow(key, instanceId, window =>
             {
+                // A mouse-down can reach the window late; starting a move after the button was released
+                // would leave Windows in move mode waiting for a release that already happened.
+                if (!IsPrimaryButtonPressed()) return;
+
                 TryDragMove(window);
 
                 if (GameAnchoredKeys.Contains(key))
@@ -231,6 +240,13 @@ public sealed class WindowManagerService(IAppSettingsService settingsService, Ga
         }
     }
 
+    private static bool IsPrimaryButtonPressed()
+    {
+        // GetAsyncKeyState reports physical buttons, so honor a left-handed button swap.
+        var primary = NativeMethods.GetSystemMetrics(NativeMethods.SM_SWAPBUTTON) != 0 ? NativeMethods.VK_RBUTTON : NativeMethods.VK_LBUTTON;
+        return (NativeMethods.GetAsyncKeyState(primary) & 0x8000) != 0;
+    }
+
     #endregion
 
     #region Window tracking
@@ -292,7 +308,7 @@ public sealed class WindowManagerService(IAppSettingsService settingsService, Ga
         window.Activate();
     }
 
-    private static void TryDragMove(Window window)
+    private void TryDragMove(Window window)
     {
         try
         {

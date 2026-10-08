@@ -6,6 +6,7 @@
 - **Minimize to tray**: the Hide button and the toggle-visibility hotkey send the meter and its overlays to the system tray. Double-click the tray icon or use its menu (Show / Settings / Exit).
 - **Show only over the game**: the meter and all its windows are visible only while AION2 (or the meter itself) is focused. They hide when you alt-tab away, stay hidden while the game isn't running, and reappear without taking focus from the game. On by default; toggle it in Settings → Appearance. The tray icon's Show still brings everything back.
 - **Windows follow the game**: the meter and overlays are placed over the game window wherever it is, and follow it live when it moves to another monitor. Positions are remembered relative to the game window, never as screen coordinates.
+- **Hold-to-move**: the meter and overlays are click-through, so clicks go to the game. Hold Ctrl (configurable: Settings → Hotkeys) to use, drag (the meter by its whole header bar) or resize them; a dashed outline and the resize grip show only while it is held. Dropping them at a screen edge no longer snap-resizes them.
 
 ### Changed
 - The meter refreshes 10 times per second and re-renders only when a displayed value changes; bar movement is animated in CSS. This keeps its embedded browser from falling behind in large fights.
@@ -14,6 +15,7 @@
 - The Settings window can be moved by dragging anywhere on its header bar (previously only the title text), and is wider so all tabs fit on one row.
 - Player rows use class colors by default.
 - The meter's default size is 473×297, placed at the game's left edge.
+- The meter runs as administrator (UAC prompt at launch). AION2 runs elevated, and Windows only delivers its keyboard input to hooks at the same privilege level, which hold-to-move needs.
 
 ### Fixed
 - The app slowed down over long sessions: every mob ever hit kept an entry that was scanned on each damage and buff event. Finished entries are now dropped.
