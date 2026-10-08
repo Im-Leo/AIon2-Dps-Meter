@@ -25,8 +25,9 @@ namespace AionDpsMeter.Services.Services.Session
         private readonly List<BuffEvent> activeBuffBacklog = new();
         private readonly ITimedEventTracker buffEventTracker;
         private readonly ITimedEventTracker skillCdEventTracker;
+        private readonly GroupTracker groupTracker;
 
-        // Arrival time (UTC ticks) of the last hit by the user; written by the packet thread, read by the UI.
+        // Arrival time (UTC ticks) of the last hit by the user or their group; written by the packet thread, read by the UI.
         private long lastCombatHitTicks;
 
 
@@ -36,9 +37,11 @@ namespace AionDpsMeter.Services.Services.Session
             IAppSettingsService settingsService,
             ICombatHistoryStore historyStore,
             [FromKeyedServices("Buffs")] ITimedEventTracker buffEventTracker,
-            [FromKeyedServices("SkillCd")] ITimedEventTracker skillCdEventTracker)
+            [FromKeyedServices("SkillCd")] ITimedEventTracker skillCdEventTracker,
+            GroupTracker groupTracker)
         {
             this.entityTracker = entityTracker;
+            this.groupTracker = groupTracker;
             this.settingsService = settingsService;
             this.historyStore = historyStore;
             this.buffEventTracker = buffEventTracker;
@@ -145,8 +148,19 @@ namespace AionDpsMeter.Services.Services.Session
 
         public IReadOnlyCollection<PlayerStats> PlayerStats
         {
-            get { lock (lockObject) { return GetActiveTargetSession()?.GetPlayerStats() ?? []; } }
+            get
+            {
+                lock (lockObject)
+                {
+                    var stats = GetActiveTargetSession()?.GetPlayerStats() ?? [];
+                    foreach (var stat in stats)
+                        stat.Group = groupTracker.GetGroupKind(entityTracker.GetPlayerEntity((int)stat.PlayerId));
+                    return stats;
+                }
+            }
         }
+
+        public bool IsGrouped => groupTracker.IsGrouped;
 
         public PlayerStatSnapshot? GetCurrentPlayerStatSnapshot()
         {
@@ -179,20 +193,27 @@ namespace AionDpsMeter.Services.Services.Session
             return ticks == 0 ? null : (DateTime.UtcNow - new DateTime(ticks, DateTimeKind.Utc)).TotalSeconds;
         }
 
-        // Combat means the user hit something; until the user's row is recognized, any player's hit counts.
+        // Combat means the user or their group hit something; until the user's row is recognized, any player's hit counts.
         private void RecordCombatHit(PlayerDamage damageEvent)
         {
             if (damageEvent.SourceEntity is not Player source) return;
 
-            bool counts = !entityTracker.HasUser || source.IsUser;
+            bool counts = !entityTracker.HasUser || source.IsUser || groupTracker.GetGroupKind(source) != GroupKind.None;
             if (counts) Interlocked.Exchange(ref lastCombatHitTicks, DateTime.UtcNow.Ticks);
         }
 
         public double GetPartyDps()
         {
-            double totalDamage = PlayerStats.Sum(r => r.TotalDamage);
-            double seconds = GetCombatDuration().TotalSeconds;
-            return seconds > 0 ? totalDamage / seconds : 0;
+            lock (lockObject)
+            {
+                Func<PlayerSession, bool> counts = groupTracker.IsGrouped
+                    ? s => s.IsUser || groupTracker.GetGroupKind(entityTracker.GetPlayerEntity(s.PlayerId)) != GroupKind.None
+                    : _ => true;
+
+                double totalDamage = GetActiveTargetSession()?.SumDamage(counts) ?? 0;
+                double seconds = GetCombatDuration().TotalSeconds;
+                return seconds > 0 ? totalDamage / seconds : 0;
+            }
         }
 
         /// <summary>
