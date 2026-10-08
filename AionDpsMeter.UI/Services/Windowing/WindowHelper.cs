@@ -148,6 +148,7 @@ namespace AionDpsMeter.UI.Services.Windowing
             {
                 Width = 500,
                 Height = 900,
+                EscapeClose = CloseSettings,
             };
             windowManager.Open(WindowKey.Settings, win, isSingleton: true, owner: MainWindow);
         }

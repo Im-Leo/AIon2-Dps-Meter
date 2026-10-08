@@ -29,5 +29,11 @@
 <body>
     <div id="app"></div>
     <script src="_framework/blazor.webview.js"></script>
+    <script>
+        // Esc inside a page closes the newest app window, as it does in the app's native windows.
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') DotNet.invokeMethodAsync('AionDpsMeter.UI', 'CloseNewestWindowOnEscape');
+        });
+    </script>
 </body>
 </html>
