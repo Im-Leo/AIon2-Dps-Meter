@@ -97,6 +97,7 @@ namespace AionDpsMeter.UI.Services.Windowing
         private void ShowHiddenWindows()
         {
             var openWindows = Application.Current.Windows.OfType<Window>().ToHashSet();
+            AppWindow.RestoringVisibility = true;
             foreach (var window in _hiddenWindows.Where(openWindows.Contains))
             {
                 var showActivated = window.ShowActivated;
@@ -108,6 +109,7 @@ namespace AionDpsMeter.UI.Services.Windowing
                     window.WindowState = WindowState.Normal;
             }
 
+            AppWindow.RestoringVisibility = false;
             _hiddenWindows.Clear();
         }
     }
