@@ -37,6 +37,7 @@ namespace AionDpsMeter.UI.Pages
         new("appearance", "Appearance", "&#9707;"),
         new("hotkeys", "Hotkeys", "&#9000;"),
         new("tracking", "Tracking", "&#9881;"),
+        new("clock", "Clock & Timers", "&#9201;"),
         new("overlays", "[BETA] Overlays", "&#9635;"),
     };
 
@@ -166,6 +167,58 @@ namespace AionDpsMeter.UI.Pages
             var s = settings.SkillCdOverlaySettings;
             s.Enabled = value;
             settings.SkillCdOverlaySettings = s;
+        }
+
+        private void SetTimersOverlayEnabled(bool value)
+        {
+            var s = settings.TimersOverlaySettings;
+            s.Enabled = value;
+            settings.TimersOverlaySettings = s;
+        }
+
+        private void SetTimersShowClock(bool value)
+        {
+            var s = settings.TimersOverlaySettings;
+            s.ShowClock = value;
+            settings.TimersOverlaySettings = s;
+        }
+
+        private void SetTimersUse24HourClock(bool value)
+        {
+            var s = settings.TimersOverlaySettings;
+            s.Use24HourClock = value;
+            settings.TimersOverlaySettings = s;
+        }
+
+        private void SetRiftShowTimer(bool value)
+        {
+            var s = settings.SpacetimeRiftSettings;
+            s.ShowTimer = value;
+            settings.SpacetimeRiftSettings = s;
+        }
+
+        private void SetRiftTrayNotification(bool value)
+        {
+            var s = settings.SpacetimeRiftSettings;
+            s.TrayNotification = value;
+            settings.SpacetimeRiftSettings = s;
+        }
+
+        private void SetRiftSound(bool value)
+        {
+            var s = settings.SpacetimeRiftSettings;
+            s.Sound = value;
+            settings.SpacetimeRiftSettings = s;
+        }
+
+        private void OnRiftLeadMinutesInput(ChangeEventArgs e)
+        {
+            var digitsOnly = new string((e.Value?.ToString() ?? string.Empty).Where(char.IsDigit).ToArray());
+            if (!int.TryParse(digitsOnly, out var minutes)) return;
+
+            var s = settings.SpacetimeRiftSettings;
+            s.LeadMinutes = minutes;
+            settings.SpacetimeRiftSettings = s;
         }
 
         private void SetBuffOverlayOrder(OverlayOrderMode mode)

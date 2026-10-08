@@ -13,6 +13,8 @@ public static class PacketOpcodes
     public const ushort PlayerInfo = 0x3633;          // 33 36
     public const ushort OtherPlayersInfo = 0x3645;    // 45 36
     public const ushort GlobalSessIdLinking = 0x3620; // 20 36
+    public const ushort ServerTransfer = 0x3616;      // 16 36
+    public const ushort MapObjects = 0x9101;          // 01 91
     public const ushort PlayerStats = 0x3649;         // 49 36
     public const ushort PartyInfo = 0x9702;           // 02 97
     public const ushort EntityDeath = 0x8D04;         // 04 8D

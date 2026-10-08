@@ -39,6 +39,8 @@ namespace AionDpsMeter.Services.Services.Settings
         double StatCalcBossSmiteResist { get; set; }
         OverlaySettings BufOverlaySettings { get; set; }
         OverlaySettings SkillCdOverlaySettings { get; set; }
+        SpacetimeRiftSettings SpacetimeRiftSettings { get; set; }
+        TimersOverlaySettings TimersOverlaySettings { get; set; }
         bool TryGetGameRelativePosition(WindowKey key, out GameRelativePosition? position);
         void SetGameRelativePosition(WindowKey key, GameRelativePosition position);
 

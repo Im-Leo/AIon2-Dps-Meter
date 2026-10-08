@@ -16,7 +16,41 @@ namespace AionDpsMeter.Services.Services.Settings
         {
             _data = Load();
             _data.HistoryRetantionPeriod = Math.Clamp(_data.HistoryRetantionPeriod, 1, 9999);
+            _data.SpacetimeRiftSettings ??= new SpacetimeRiftSettings();
+            _data.SpacetimeRiftSettings.LeadMinutes = Math.Clamp(_data.SpacetimeRiftSettings.LeadMinutes,
+                SpacetimeRiftSettings.MinLeadMinutes, SpacetimeRiftSettings.MaxLeadMinutes);
+            _data.TimersOverlaySettings ??= new TimersOverlaySettings();
             _data.GameRelativePositions ??= [];
+        }
+
+        public TimersOverlaySettings TimersOverlaySettings
+        {
+            get { lock (_lock) return _data.TimersOverlaySettings; }
+            set
+            {
+                lock (_lock)
+                {
+                    _data.TimersOverlaySettings = value;
+                    Save();
+                }
+                SettingsChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public SpacetimeRiftSettings SpacetimeRiftSettings
+        {
+            get { lock (_lock) return _data.SpacetimeRiftSettings; }
+            set
+            {
+                lock (_lock)
+                {
+                    value.LeadMinutes = Math.Clamp(value.LeadMinutes,
+                        SpacetimeRiftSettings.MinLeadMinutes, SpacetimeRiftSettings.MaxLeadMinutes);
+                    _data.SpacetimeRiftSettings = value;
+                    Save();
+                }
+                SettingsChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         public string OverlayMoveKey
@@ -596,6 +630,12 @@ namespace AionDpsMeter.Services.Services.Settings
 
             [JsonPropertyName("bufOverlaySettings")]
             public OverlaySettings BufOverlaySettings { get; set; } = new OverlaySettings();
+
+            [JsonPropertyName("spacetimeRiftSettings")]
+            public SpacetimeRiftSettings SpacetimeRiftSettings { get; set; } = new SpacetimeRiftSettings();
+
+            [JsonPropertyName("timersOverlaySettings")]
+            public TimersOverlaySettings TimersOverlaySettings { get; set; } = new TimersOverlaySettings();
 
             [JsonPropertyName("skillCdOverlaySettings")]
             public OverlaySettings SkillCdOverlaySettings { get; set; } = new OverlaySettings();

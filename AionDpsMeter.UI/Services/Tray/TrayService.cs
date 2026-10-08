@@ -43,6 +43,9 @@ namespace AionDpsMeter.UI.Services.Tray
             else visibility.Hide(HideReason.Tray);
         }
 
+        public void ShowNotification(string title, string text) =>
+            _notifyIcon.ShowBalloonTip(5000, title, text, Forms.ToolTipIcon.Info);
+
         public void Dispose()
         {
             _notifyIcon.Visible = false;

@@ -15,7 +15,7 @@ public sealed class WindowManagerService(IAppSettingsService settingsService, Ga
     private const double PositionGap = 8;
 
     private static readonly HashSet<WindowKey> GameAnchoredKeys =
-        [WindowKey.Main, WindowKey.BuffOverlay, WindowKey.SkillCdOverlay];
+        [WindowKey.Main, WindowKey.TimersOverlay, WindowKey.BuffOverlay, WindowKey.SkillCdOverlay];
 
     private readonly Dispatcher _uiDispatcher =
         Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;

@@ -1,0 +1,7 @@
+{
+  "timeZone": "America/New_York",
+  "spawnTimes": [ "02:00", "05:00", "08:00", "11:00", "14:00", "17:00", "20:00", "23:00" ],
+  "entryWindowMinutes": 10,
+  "stayMinutes": 60,
+  "portalTypes": [ 1100006, 1100008, 1100010 ]
+}
