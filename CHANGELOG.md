@@ -26,3 +26,4 @@
 - The meter could stay locked onto another program's encrypted traffic after the game was closed, instead of waiting for the game.
 - Skill and buff icons could stay blank in the details window: an icon not yet downloaded never appeared while the window was open.
 - Closing the skill cooldown overlay stopped other windows from reacting to edit mode.
+- Overlays could ignore the mouse in edit mode: click-through restored a stale snapshot of WebView2's child windows, leaving its input window disabled.
