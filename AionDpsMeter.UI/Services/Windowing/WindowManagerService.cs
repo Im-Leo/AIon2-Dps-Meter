@@ -9,17 +9,20 @@ using AionDpsMeter.UI.Utils;
 
 namespace AionDpsMeter.UI.Services.Windowing;
 
-public sealed class WindowManagerService(IAppSettingsService settingsService)
+public sealed class WindowManagerService(IAppSettingsService settingsService, GameFocusWatcher focusWatcher)
     : IWindowManagerService
 {
     private const double PositionGap = 8;
+
+    private static readonly HashSet<WindowKey> GameAnchoredKeys =
+        [WindowKey.Main, WindowKey.BuffOverlay, WindowKey.SkillCdOverlay];
 
     private readonly Dispatcher _uiDispatcher =
         Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
     private readonly Lock _gate = new();
 
-    private readonly Dictionary<WindowSlot, TrackedWindow> _windows = new();
+    private readonly Dictionary<WindowSlot, Window> _windows = new();
 
     private readonly Dictionary<Window, ClickThroughState> _clickThroughStates = new();
 
@@ -35,8 +38,7 @@ public sealed class WindowManagerService(IAppSettingsService settingsService)
         Window window,
         bool isSingleton,
         string? instanceId = null,
-        Window? owner = null,
-        WindowPersistenceMode persistenceMode = WindowPersistenceMode.None)
+        Window? owner = null)
     {
         RunOnUiThread(() =>
         {
@@ -54,11 +56,9 @@ public sealed class WindowManagerService(IAppSettingsService settingsService)
                 PositionToRightOf(window, owner);
             }
 
-            TryRestoreWindowBounds(window, key, persistenceMode);
-
             lock (_gate)
             {
-                _windows[slot] = new TrackedWindow(window, persistenceMode);
+                _windows[slot] = window;
             }
 
             window.Closed += (_, _) => OnWindowClosed(slot, window);
@@ -85,7 +85,7 @@ public sealed class WindowManagerService(IAppSettingsService settingsService)
 
             lock (_gate)
             {
-                snapshot = _windows.Values.Select(tracked => tracked.Window).ToList();
+                snapshot = _windows.Values.ToList();
             }
 
             foreach (var window in snapshot)
@@ -104,14 +104,35 @@ public sealed class WindowManagerService(IAppSettingsService settingsService)
             {
                 TryDragMove(window);
 
-                if (GetPersistenceMode(key, instanceId) != WindowPersistenceMode.None)
+                if (GameAnchoredKeys.Contains(key))
                 {
-                    SaveWindowBounds(key, window);
+                    SaveGameRelativePosition(key, window);
                 }
             }));
 
     public bool IsOpen(WindowKey key, string? instanceId = null) =>
         TryGetWindow(WindowSlot.ForLookup(key, instanceId), out _);
+
+    public Size PlaceOverGame(WindowKey key, Rect gameRect, Func<Size, Point> defaultTopLeft)
+    {
+        var size = Size.Empty;
+
+        RunOnUiThread(() =>
+            WithWindow(key, null, window =>
+            {
+                size = GetWindowSize(window);
+
+                var target = settingsService.TryGetGameRelativePosition(key, out var relative) && relative is not null
+                    ? new Point(gameRect.Left + relative.X * gameRect.Width, gameRect.Top + relative.Y * gameRect.Height)
+                    : defaultTopLeft(size);
+
+                window.WindowStartupLocation = WindowStartupLocation.Manual;
+                window.Left = Clamp(target.X, gameRect.Left, gameRect.Right - size.Width);
+                window.Top = Clamp(target.Y, gameRect.Top, gameRect.Bottom - size.Height);
+            }));
+
+        return size;
+    }
 
     #endregion
 
@@ -220,7 +241,7 @@ public sealed class WindowManagerService(IAppSettingsService settingsService)
         {
             if (_windows.TryGetValue(slot, out var tracked))
             {
-                window = tracked.Window;
+                window = tracked;
                 return true;
             }
         }
@@ -237,16 +258,6 @@ public sealed class WindowManagerService(IAppSettingsService settingsService)
         }
     }
 
-    private WindowPersistenceMode GetPersistenceMode(WindowKey key, string? instanceId)
-    {
-        lock (_gate)
-        {
-            return _windows.TryGetValue(WindowSlot.ForLookup(key, instanceId), out var tracked)
-                ? tracked.PersistenceMode
-                : WindowPersistenceMode.None;
-        }
-    }
-
     private void OnWindowClosed(WindowSlot slot, Window window)
     {
         // Always restore native state before forgetting the window.
@@ -255,7 +266,7 @@ public sealed class WindowManagerService(IAppSettingsService settingsService)
         lock (_gate)
         {
             if (_windows.TryGetValue(slot, out var tracked) &&
-                ReferenceEquals(tracked.Window, window))
+                ReferenceEquals(tracked, window))
             {
                 _windows.Remove(slot);
             }
@@ -311,55 +322,26 @@ public sealed class WindowManagerService(IAppSettingsService settingsService)
         child.Top = top;
     }
 
-    private void TryRestoreWindowBounds(
-        Window window,
-        WindowKey key,
-        WindowPersistenceMode persistenceMode)
+    private void SaveGameRelativePosition(WindowKey key, Window window)
     {
-        if (persistenceMode == WindowPersistenceMode.None)
+        var game = focusWatcher.FindGameWindow();
+        if (game == IntPtr.Zero || ScreenHelper.GetWindowRectDips(game, window) is not { } gameRect)
         {
             return;
         }
 
-        if (!settingsService.TryGetWindowBounds(key, out var saved) || saved is null)
-        {
-            return;
-        }
-
-        var workArea = ScreenHelper.GetWorkingAreaForPoint(saved.Left, saved.Top);
-        var restoreSize = persistenceMode == WindowPersistenceMode.Bounds;
-
-        var width = restoreSize ? Math.Max(window.MinWidth, saved.Width) : window.Width;
-        var height = restoreSize ? Math.Max(window.MinHeight, saved.Height) : window.Height;
-
-        if (restoreSize)
-        {
-            window.Width = width;
-            window.Height = height;
-        }
-
-        window.WindowStartupLocation = WindowStartupLocation.Manual;
-        window.Left = Clamp(saved.Left, workArea.Left, workArea.Right - width);
-        window.Top = Clamp(saved.Top, workArea.Top, workArea.Bottom - height);
-    }
-
-    private void SaveWindowBounds(WindowKey key, Window window)
-    {
-        if (window.WindowState != WindowState.Normal)
-        {
-            return;
-        }
-
-        settingsService.SetWindowBounds(
+        settingsService.SetGameRelativePosition(
             key,
-            new WindowBounds
+            new GameRelativePosition
             {
-                Left = window.Left,
-                Top = window.Top,
-                Width = window.Width,
-                Height = window.Height
+                X = (window.Left - gameRect.Left) / gameRect.Width,
+                Y = (window.Top - gameRect.Top) / gameRect.Height
             });
     }
+
+    private static Size GetWindowSize(Window window) =>
+        new(window.ActualWidth > 0 ? window.ActualWidth : window.Width,
+            window.ActualHeight > 0 ? window.ActualHeight : window.Height);
 
     private static double Clamp(double value, double min, double max) =>
         Math.Max(min, Math.Min(value, max));
@@ -401,7 +383,6 @@ public sealed class WindowManagerService(IAppSettingsService settingsService)
                 : new WindowSlot(key, instanceId ?? Guid.NewGuid().ToString("N"));
     }
 
-    private sealed record TrackedWindow(Window Window, WindowPersistenceMode PersistenceMode);
 
     #endregion
 }

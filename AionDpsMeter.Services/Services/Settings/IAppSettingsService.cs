@@ -18,9 +18,7 @@ namespace AionDpsMeter.Services.Services.Settings
         string ToggleVisibilityHotkey { get; set; }
         bool ShowOnlyOverGame { get; set; }
 
-        // Main window position & size
-        double? WindowLeft { get; set; }
-        double? WindowTop { get; set; }
+        // Main window size; its position is game-relative
         double? WindowWidth { get; set; }
         double? WindowHeight { get; set; }
         double PlayerRowScale { get; set; }
@@ -39,8 +37,8 @@ namespace AionDpsMeter.Services.Services.Settings
         double StatCalcBossSmiteResist { get; set; }
         OverlaySettings BufOverlaySettings { get; set; }
         OverlaySettings SkillCdOverlaySettings { get; set; }
-        bool TryGetWindowBounds(WindowKey key, out WindowBounds? bounds);
-        void SetWindowBounds(WindowKey key, WindowBounds bounds);
+        bool TryGetGameRelativePosition(WindowKey key, out GameRelativePosition? position);
+        void SetGameRelativePosition(WindowKey key, GameRelativePosition position);
 
         event EventHandler SettingsChanged;
     }

@@ -3,9 +3,11 @@ using AionDpsMeter.Services.Services.Settings;
 using AionDpsMeter.Services.Services.Update;
 using AionDpsMeter.Core.Windowing;
 using AionDpsMeter.UI.Pages;
+using AionDpsMeter.UI.Utils;
 using AionDpsMeter.UI.ViewModels;
 using AionDpsMeter.UI.Views;
 using Microsoft.Extensions.DependencyInjection;
+using System.Windows;
 
 namespace AionDpsMeter.UI.Services.Windowing
 {
@@ -26,8 +28,16 @@ namespace AionDpsMeter.UI.Services.Windowing
         private readonly CombatSessionManager sessionManager;
         private readonly IAppSettingsService settingsService;
         private readonly UpdateCheckerService updateService;
+        private readonly GameFocusWatcher focusWatcher;
 
-        public WindowHelper(IWindowManagerService windowManager, IServiceProvider serviceProvider, CombatSessionManager sessionManager, IAppSettingsService settingsService, UpdateCheckerService updateService)
+        // Default spots as fractions of the game window, until the user drags a window somewhere else.
+        // The overlays are centered horizontally for their actual width; only their height is a fraction.
+        private static readonly Point MeterDefault = new(0, 0.535);
+        private const double OverlaysDefaultTop = 0.0868;
+        private const double OverlayGap = 8;
+        private static readonly WindowKey[] OverlayKeys = [WindowKey.BuffOverlay, WindowKey.SkillCdOverlay];
+
+        public WindowHelper(IWindowManagerService windowManager, IServiceProvider serviceProvider, CombatSessionManager sessionManager, IAppSettingsService settingsService, UpdateCheckerService updateService, GameFocusWatcher focusWatcher)
         {
 
             this.windowManager = windowManager;
@@ -35,6 +45,7 @@ namespace AionDpsMeter.UI.Services.Windowing
             this.sessionManager = sessionManager;
             this.settingsService = settingsService;
             this.updateService = updateService;
+            this.focusWatcher = focusWatcher;
 
             IsBuffOverlayEnabled = settingsService.BufOverlaySettings.Enabled;
             IsSkillCdOverlayEnabled = settingsService.SkillCdOverlaySettings.Enabled;
@@ -63,6 +74,33 @@ namespace AionDpsMeter.UI.Services.Windowing
             ManageSkillCdOverlay();
             windowManager.SetClickThrough(WindowKey.BuffOverlay);
             windowManager.SetClickThrough(WindowKey.SkillCdOverlay);
+            focusWatcher.GameFocused += (_, _) => PlaceWindowsOverGame();
+            focusWatcher.GameMoved += (_, _) => PlaceWindowsOverGame();
+            PlaceWindowsOverGame();
+        }
+
+        /// <summary>
+        /// The meter and overlays always sit over the game window, wherever it is: at their saved game-relative spot,
+        /// else at the default spots.
+        /// </summary>
+        private void PlaceWindowsOverGame()
+        {
+            var game = focusWatcher.FindGameWindow();
+            if (game == IntPtr.Zero || ScreenHelper.GetWindowRectDips(game, MainWindow) is not { } gameRect) return;
+
+            Point At(Point fraction) => new(gameRect.Left + fraction.X * gameRect.Width, gameRect.Top + fraction.Y * gameRect.Height);
+
+            windowManager.PlaceOverGame(WindowKey.Main, gameRect, _ => At(MeterDefault));
+
+            // The buff and skill-cooldown overlays stack near the top, centered.
+            var top = gameRect.Top + OverlaysDefaultTop * gameRect.Height;
+            foreach (var key in OverlayKeys)
+            {
+                var overlayTop = top;
+                var size = windowManager.PlaceOverGame(key, gameRect,
+                    s => new Point(gameRect.Left + (gameRect.Width - s.Width) / 2, overlayTop));
+                if (!size.IsEmpty) top += size.Height + OverlayGap;
+            }
         }
 
 
@@ -159,7 +197,7 @@ namespace AionDpsMeter.UI.Services.Windowing
         private void OpenBuffOverlay()
         {
             var buffOverlay = new BuffOverlayWindow();
-            windowManager.Open(WindowKey.BuffOverlay, buffOverlay, true, persistenceMode: WindowPersistenceMode.OnlyPosition);
+            windowManager.Open(WindowKey.BuffOverlay, buffOverlay, true);
         }
 
         private void HideBuffOverlay()
@@ -170,7 +208,7 @@ namespace AionDpsMeter.UI.Services.Windowing
         private void OpenSkillCdOverlay()
         {
             var skillCdOverlay = new SkillCdOverlayWindow();
-            windowManager.Open(WindowKey.SkillCdOverlay, skillCdOverlay, true, persistenceMode: WindowPersistenceMode.OnlyPosition);
+            windowManager.Open(WindowKey.SkillCdOverlay, skillCdOverlay, true);
         }
 
         private void HideSkillCdOverlay()
