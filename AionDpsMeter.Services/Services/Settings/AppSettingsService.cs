@@ -17,6 +17,7 @@ namespace AionDpsMeter.Services.Services.Settings
             _data = Load();
             _data.HistoryRetantionPeriod = Math.Clamp(_data.HistoryRetantionPeriod, 1, 9999);
             _data.GameRelativePositions ??= [];
+            _data.UserNameOverride ??= string.Empty;
         }
 
         public string OverlayMoveKey
@@ -62,6 +63,23 @@ namespace AionDpsMeter.Services.Services.Settings
                 {
                     changed = _data.ShowItemLevel != value;
                     _data.ShowItemLevel = value;
+                    if (changed) Save();
+                }
+                if (changed) SettingsChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public string UserNameOverride
+        {
+            get { lock (_lock) return _data.UserNameOverride; }
+            set
+            {
+                var trimmed = value?.Trim() ?? string.Empty;
+                bool changed;
+                lock (_lock)
+                {
+                    changed = _data.UserNameOverride != trimmed;
+                    _data.UserNameOverride = trimmed;
                     if (changed) Save();
                 }
                 if (changed) SettingsChanged?.Invoke(this, EventArgs.Empty);
@@ -647,6 +665,9 @@ namespace AionDpsMeter.Services.Services.Settings
 
             [JsonPropertyName("skillCdOverlaySettings")]
             public OverlaySettings SkillCdOverlaySettings { get; set; } = new OverlaySettings();
+
+            [JsonPropertyName("userNameOverride")]
+            public string UserNameOverride { get; set; } = string.Empty;
 
             [JsonPropertyName("showOnlyOverGame")]
             public bool ShowOnlyOverGame { get; set; } = true;

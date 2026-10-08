@@ -50,6 +50,8 @@ namespace AionDpsMeter.Services.Services.Session
             targetResolver = new ActiveTargetResolver(entityTracker);
             logger = loggerFactory.CreateLogger<CombatSessionManager>();
             selfDetector = new SelfDetector(entityTracker, logger);
+            entityTracker.UserNameOverride = settingsService.UserNameOverride;
+            settingsService.SettingsChanged += (_, _) => entityTracker.UserNameOverride = settingsService.UserNameOverride;
             entityTracker.SummonRegistered += OnSummonRegistered;
         }
 

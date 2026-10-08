@@ -29,6 +29,11 @@ namespace AionDpsMeter.Services.Services.Entity
         // True once the game's own player info named the user; inference never overrides that.
         public bool IsUserConfirmed { get; private set; }
 
+        public string UserNameOverride { get; set; } = string.Empty;
+
+        public string GetDisplayName(Player player) =>
+            player.IsUser && !string.IsNullOrWhiteSpace(UserNameOverride) ? UserNameOverride : player.Name;
+
         /// <summary>Marks an inferred session player as the user; returns false when the user is already confirmed or unchanged.</summary>
         public bool MarkUserSession(int sessionId)
         {
