@@ -142,6 +142,8 @@ namespace AionDpsMeter.Services.Services.Entity
 
         public Player? GetPlayerEntity(int sessionId) => sessionPlayers.GetValueOrDefault(sessionId);
 
+        public bool HasUser => sessionPlayers.Values.Any(p => p.IsUser);
+
         // ----- Flow 2: server sends global player metadata, any time -----------
 
         public void RegisterOrUpdateGlobalPlayer(Player data)

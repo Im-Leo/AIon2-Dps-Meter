@@ -20,6 +20,7 @@ A lightweight, **network-based** DPS meter and Stat Efficiency Calculator for **
 - **🔍 Detailed Player Stats** — per-player breakdown: crit/back-attack/perfect-hit/parry rates, skill-by-skill damage, buffs, DPS graph with buff timeline, live combat log
 - **📜 Combat History** — every fight auto-saved as a session snapshot, browsable with configurable retention
 - **🔔 Buff & Skill Cooldown Overlays** — floating overlays tracking up to 10 buffs + 10 skill cooldowns, with a pick-list to choose exactly what to track, sortable by time remaining, adjustable icon size (20–50px), and each overlay can be toggled independently
+- **⚔️ Meter Only in Combat** — optional: the meter appears when you or your group deal damage and hides 10 s after the last hit
 - **🎮 Shows Only Over the Game** — the meter and overlays sit over the game window, follow it across monitors, and hide when you alt-tab away (toggleable)
 - **🖱️ Click-Through, Hold to Move** — clicks go to the game; hold Ctrl (configurable) to use, drag (by the header bar) or resize the meter and overlays
 - **🗕 Minimize to Tray** — the Hide button and hotkey send the meter and overlays to the system tray

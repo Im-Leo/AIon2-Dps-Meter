@@ -72,6 +72,12 @@
                 </ValueSlot>
             </SettingRow>
 
+            <SettingRow Title="Show Meter Only in Combat" Description="Hide the meter outside combat; it appears when you or your group deal damage and hides 10 s after the last hit. Hold Ctrl to show it anyway">
+                <ValueSlot>
+                    <ToggleSwitch Checked="settings.ShowMeterOnlyInCombat" CheckedChanged="v => { settings.ShowMeterOnlyInCombat = v; }" />
+                </ValueSlot>
+            </SettingRow>
+
             @if (settings.UiStyle == 1)
             {
                 <SettingRow Title="Row Size" Description="Size of each player row">

@@ -16,6 +16,7 @@ namespace AionDpsMeter.Services.Services.Settings
         bool RelativeProgressBar { get; set; }
 
         string ToggleVisibilityHotkey { get; set; }
+        bool ShowMeterOnlyInCombat { get; set; }
         bool ShowOnlyOverGame { get; set; }
         /// <summary>Modifier held to make overlays movable: "Ctrl", "Shift" or "Alt".</summary>
         string OverlayMoveKey { get; set; }

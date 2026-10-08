@@ -26,6 +26,9 @@ namespace AionDpsMeter.Services.Services.Session
         private readonly ITimedEventTracker buffEventTracker;
         private readonly ITimedEventTracker skillCdEventTracker;
 
+        // Arrival time (UTC ticks) of the last hit by the user; written by the packet thread, read by the UI.
+        private long lastCombatHitTicks;
+
 
         public CombatSessionManager(
             EntityTracker entityTracker,
@@ -174,6 +177,23 @@ namespace AionDpsMeter.Services.Services.Session
             GetActiveTargetSession()?.RegisterPlayerDeath(playerId);
         }
 
+        public bool IsInCombat(TimeSpan window) => SecondsSinceCombatHit() is { } seconds && seconds <= window.TotalSeconds;
+
+        public double? SecondsSinceCombatHit()
+        {
+            long ticks = Interlocked.Read(ref lastCombatHitTicks);
+            return ticks == 0 ? null : (DateTime.UtcNow - new DateTime(ticks, DateTimeKind.Utc)).TotalSeconds;
+        }
+
+        // Combat means the user hit something; until the user's row is recognized, any player's hit counts.
+        private void RecordCombatHit(PlayerDamage damageEvent)
+        {
+            if (damageEvent.SourceEntity is not Player source) return;
+
+            bool counts = !entityTracker.HasUser || source.IsUser;
+            if (counts) Interlocked.Exchange(ref lastCombatHitTicks, DateTime.UtcNow.Ticks);
+        }
+
         public double GetPartyDps()
         {
             double totalDamage = PlayerStats.Sum(r => r.TotalDamage);
@@ -280,6 +300,7 @@ namespace AionDpsMeter.Services.Services.Session
                     if (entityTracker.IsSummon(damageEvent.SourceEntity.Id) &&
                         !ResolveSummonSource(damageEvent))
                         return;
+                    RecordCombatHit(damageEvent);
                     RouteToTargetEntry(damageEvent);
 
                     // Check all other entries for idle timeout on each new event
