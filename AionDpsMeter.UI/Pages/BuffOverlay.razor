@@ -13,7 +13,7 @@
                 <div class="timed-icon-overlay__icon @(item.IsExpiring ? "blink" : "")"
                      style="@IconStyle">
 
-                    <img src="@item.IconUrl" draggable="false" />
+                    <img src="@PackedIcons.Src(item.IconUrl)" draggable="false" />
                     <span class="timed-icon-overlay__time" style="@CdTextStyle">
                         @FormatTimeLeft(item.TimeLeft)
                     </span>

@@ -26,6 +26,9 @@ namespace AionDpsMeter.Core
         public static string IconCacheDirectory => Path.Combine(DataDirectory, IconCacheFolderName, "Skills");
         public static string PacketLogsDirectory => Path.Combine(DataDirectory, PacketLogsFolderName);
 
+        /// <summary>Skill and buff icons shipped with the app (tools/SkillIconPacker), served to the Blazor pages from wwwroot too.</summary>
+        public static string SkillIconPackDirectory => Path.Combine(AppContext.BaseDirectory, "wwwroot", "icons", "skills");
+
         /// <summary>
         /// Copies user data left in the program folder by earlier versions. Only what is missing in the data folder is
         /// copied; nothing is overwritten or removed.
