@@ -15,6 +15,7 @@
 - **Item level**: shown above the class icon (combat power stays below) for you and your party and force members, read from the group rosters. Combat power is now also filled in from party rosters. Players outside your group show neither, since the game doesn't send them. Toggle it in Settings → Appearance → Show Item Level (on by default).
 - **Earlier self-recognition**: the meter now finds your row from your own skill cooldowns within the first few casts, instead of waiting for a zone change, so the highlight, Keep Me on Top, Solo Mode and your display name work right away (including in forces and the open world).
 - **My Display Name**: an optional name shown for your character everywhere (meter, details, history), set at the top of Settings → Appearance. Empty keeps the game's name.
+- **Solo Mode**: the meter shows only your row and its total counts only your own damage. Switch it with SOLO on the meter bar (colored when on, grayed out when off) or in Settings → Appearance. It turns off automatically while you're in a party or force and comes back after you leave. Other players are never shown in solo; until your row is recognized (your first cooldown skills, or a zone change) the meter shows a short hint instead.
 
 ### Changed
 - The meter refreshes 10 times per second and re-renders only when a displayed value changes; bar movement is animated in CSS. This keeps its embedded browser from falling behind in large fights.

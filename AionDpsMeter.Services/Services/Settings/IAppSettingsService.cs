@@ -17,6 +17,7 @@ namespace AionDpsMeter.Services.Services.Settings
 
         string ToggleVisibilityHotkey { get; set; }
         bool PinUserOnTop { get; set; }
+        bool TotalShowsOnlyMyDps { get; set; }
         bool ShowItemLevel { get; set; }
         bool ShowMeterOnlyInCombat { get; set; }
         string UserNameOverride { get; set; }

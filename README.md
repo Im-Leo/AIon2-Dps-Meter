@@ -20,8 +20,9 @@ A lightweight, **network-based** DPS meter and Stat Efficiency Calculator for **
 - **🔍 Detailed Player Stats** — per-player breakdown: crit/back-attack/perfect-hit/parry rates, skill-by-skill damage, buffs, DPS graph with buff timeline, live combat log
 - **📜 Combat History** — every fight auto-saved as a session snapshot, browsable with configurable retention
 - **🔔 Buff & Skill Cooldown Overlays** — floating overlays tracking up to 10 buffs + 10 skill cooldowns, with a pick-list to choose exactly what to track, sortable by time remaining, adjustable icon size (20–50px), and each overlay can be toggled independently
-- **👥 Party & Force Aware** — party members marked 👥 and force members ⚔️; while grouped only your group is listed and counted in the total (strangers are still recorded)
+- **👥 Party & Force Aware** — party members marked 👥 and force members ⚔️; while grouped only your group is listed and counted in the total (strangers are still recorded); an option makes the total show only your own DPS
 - **🎒 Item Level & Combat Power** — item level above the class icon and combat power below it, for you and your party and force members (item level can be turned off in Settings)
+- **🎯 Solo Mode & Display Name** — SOLO switch on the meter bar to show only you and your damage (auto-off in groups); optional display name for your character; your row is recognized from your first casts
 - **⚔️ Meter Only in Combat** — optional: the meter appears when you or your group deal damage and hides 10 s after the last hit
 - **📌 Keep Me on Top** — on by default: pins your own row first with your real DPS rank, so you can find yourself in a full force; your row is also always outlined in gold
 - **🎮 Shows Only Over the Game** — the meter and overlays sit over the game window, follow it across monitors, and hide when you alt-tab away (toggleable)

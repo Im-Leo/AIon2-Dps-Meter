@@ -172,6 +172,26 @@ namespace AionDpsMeter.Services.Services.Session
 
         public bool IsGrouped => groupTracker.IsGrouped;
 
+        public bool IsInCombat(TimeSpan window) => SecondsSinceCombatHit() is { } seconds && seconds <= window.TotalSeconds;
+
+        public double? SecondsSinceCombatHit()
+        {
+            long ticks = Interlocked.Read(ref lastCombatHitTicks);
+            return ticks == 0 ? null : (DateTime.UtcNow - new DateTime(ticks, DateTimeKind.Utc)).TotalSeconds;
+        }
+
+        // Combat means the user or their group hit something; until the user's row is recognized, any player's hit counts.
+        private void RecordCombatHit(PlayerDamage damageEvent)
+        {
+            if (damageEvent.SourceEntity is not Player source) return;
+
+            bool counts = !entityTracker.HasUser || source.IsUser || groupTracker.GetGroupKind(source) != GroupKind.None;
+            if (counts) Interlocked.Exchange(ref lastCombatHitTicks, DateTime.UtcNow.Ticks);
+        }
+
+        // Solo is suspended while grouped without touching the setting, so leaving the group restores it.
+        public bool IsSoloActive => settingsService.TotalShowsOnlyMyDps && !groupTracker.IsGrouped;
+
         public PlayerStatSnapshot? GetCurrentPlayerStatSnapshot()
         {
             lock (lockObject)
@@ -195,30 +215,15 @@ namespace AionDpsMeter.Services.Services.Session
             GetActiveTargetSession()?.RegisterPlayerDeath(playerId);
         }
 
-        public bool IsInCombat(TimeSpan window) => SecondsSinceCombatHit() is { } seconds && seconds <= window.TotalSeconds;
-
-        public double? SecondsSinceCombatHit()
-        {
-            long ticks = Interlocked.Read(ref lastCombatHitTicks);
-            return ticks == 0 ? null : (DateTime.UtcNow - new DateTime(ticks, DateTimeKind.Utc)).TotalSeconds;
-        }
-
-        // Combat means the user or their group hit something; until the user's row is recognized, any player's hit counts.
-        private void RecordCombatHit(PlayerDamage damageEvent)
-        {
-            if (damageEvent.SourceEntity is not Player source) return;
-
-            bool counts = !entityTracker.HasUser || source.IsUser || groupTracker.GetGroupKind(source) != GroupKind.None;
-            if (counts) Interlocked.Exchange(ref lastCombatHitTicks, DateTime.UtcNow.Ticks);
-        }
-
         public double GetPartyDps()
         {
             lock (lockObject)
             {
-                Func<PlayerSession, bool> counts = groupTracker.IsGrouped
-                    ? s => s.IsUser || groupTracker.GetGroupKind(entityTracker.GetPlayerEntity(s.PlayerId)) != GroupKind.None
-                    : _ => true;
+                Func<PlayerSession, bool> counts = IsSoloActive
+                    ? s => s.IsUser
+                    : groupTracker.IsGrouped
+                        ? s => s.IsUser || groupTracker.GetGroupKind(entityTracker.GetPlayerEntity(s.PlayerId)) != GroupKind.None
+                        : _ => true;
 
                 double totalDamage = GetActiveTargetSession()?.SumDamage(counts) ?? 0;
                 double seconds = GetCombatDuration().TotalSeconds;

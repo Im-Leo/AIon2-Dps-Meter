@@ -28,7 +28,11 @@
                 </div>
                 <div class="header-row header-row-bottom">
                     <span class="boss-hp">@ViewModel.ActiveTargetHpDisplay</span>
-                    <span class="total-dps">@ViewModel.TotalRaidDamageFormatted</span>
+                    <span class="total-group">
+                        <button type="button" class="solo-btn @ViewModel.SoloClass" disabled="@ViewModel.IsGrouped"
+                                @onclick="ViewModel.ToggleSolo" @onmousedown:stopPropagation="true" title="@ViewModel.SoloTitle">SOLO</button>
+                        <span class="total-dps">@ViewModel.TotalRaidDamageFormatted</span>
+                    </span>
                 </div>
             </div>
             <div class="boss-hp-track">
@@ -47,6 +51,10 @@
         }
 
         <div class="players-list">
+            @if (ViewModel.IsSoloWaiting)
+            {
+                <div class="solo-hint">Solo: use a skill so the meter can recognize you</div>
+            }
             @foreach (var player in ViewModel.Players)
             {
                 <div class="player-module @ViewModel.GetIsUserClass(player) @ViewModel.GetSelfClass(player)" @onclick="() => ViewModel.OpenPlayerDetails(player)">
@@ -57,7 +65,7 @@
                         </div>
                         <div class="player-info">
                             <div class="name-block">
-                                <span class="rank-badge @ViewModel.GetRankClass(player)">@player.Rank</span>@ViewModel.GetGroupIcon(player)@player.PlayerNameDisplay
+                                @if (ViewModel.ShowRank) { <span class="rank-badge @ViewModel.GetRankClass(player)">@player.Rank</span> }@ViewModel.GetGroupIcon(player)@player.PlayerNameDisplay
                             </div>
                             <div class="score">@ViewModel.GetCombatScoreDisplay(player)</div>
                         </div>
