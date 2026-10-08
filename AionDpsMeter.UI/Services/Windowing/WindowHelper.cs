@@ -29,6 +29,7 @@ namespace AionDpsMeter.UI.Services.Windowing
 
         // The meter and overlays accept the mouse while Settings is open or while the move key is held; otherwise they are click-through.
         private bool _settingsOpen;
+        private PlayerDetailsWindow? _playerDetailsWindow;
         private bool _moveKeyHeld;
 
         private MainWindow MainWindow => serviceProvider.GetRequiredService<MainWindow>();
@@ -209,22 +210,34 @@ namespace AionDpsMeter.UI.Services.Windowing
 
         public void OpenPlayerDetails(PlayerRenderState player)
         {
+            var viewModel = new PlayerDetailsViewModel(
+                sessionManager,
+                player.PlayerId,
+                player.PlayerNameDisplay,
+                player.ClassName,
+                null,
+                player.ClassIcon,
+                settingsService,
+                player.CombatPower,
+                player.ServerName);
+
+            // One live details window: another player loads into it.
+            if (_playerDetailsWindow is { } open)
+            {
+                (open.DataContext as PlayerDetailsViewModel)?.Dispose();
+                open.DataContext = viewModel;
+                windowManager.Focus(WindowKey.PlayerDetails);
+                return;
+            }
 
             var detailsWindow = new PlayerDetailsWindow
             {
-                DataContext = new PlayerDetailsViewModel(
-                    sessionManager,
-                    player.PlayerId,
-                    player.PlayerNameDisplay,
-                    player.ClassName,
-                    null,
-                    player.ClassIcon,
-                    settingsService,
-                    player.CombatPower,
-                    player.ServerName),
+                DataContext = viewModel,
                 Owner = MainWindow
             };
-            windowManager.Open(WindowKey.PlayerDetails, detailsWindow, false, null, MainWindow);
+            detailsWindow.Closed += (_, _) => _playerDetailsWindow = null;
+            _playerDetailsWindow = detailsWindow;
+            windowManager.Open(WindowKey.PlayerDetails, detailsWindow, true, null, MainWindow);
         }
 
 
